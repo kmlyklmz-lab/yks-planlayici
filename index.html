@@ -253,6 +253,9 @@
                     <button onclick="applyPromptPreset(2)" class="px-3 py-1 text-xs font-medium rounded-full border theme-card transition-all">
                         📖 8 Saatlik (5s AYT Mat + 3s Edebiyat)
                     </button>
+                    <button onclick="confirmClearAllDays()" class="px-3 py-1 text-xs font-semibold rounded-full border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 flex items-center gap-1 transition-all cursor-pointer" title="Tüm günlerdeki dersleri temizle ve boş program oluştur">
+                        🧹 Tüm Günleri Sıfırla
+                    </button>
                 </div>
             </div>
 
@@ -415,6 +418,11 @@
                     <!-- Complete Day Button -->
                     <button onclick="markEntireDayComplete()" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-500 border border-emerald-500/30 transition-all flex items-center gap-1">
                         ✓ <span class="hidden sm:inline">Günün Hepsini</span> Tamamla
+                    </button>
+
+                    <!-- Clear Day Button -->
+                    <button onclick="confirmClearCurrentDay()" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 transition-all flex items-center gap-1 cursor-pointer" title="Seçili günün tüm oturumlarını sil">
+                        🗑️ <span class="hidden sm:inline">Bu Günü</span> Temizle
                     </button>
                 </div>
             </div>
@@ -805,6 +813,18 @@
                             Daha önce indirdiğiniz veya başka bir cihazda hazırladığınız yedek JSON dosyasını yükleyerek takvimi ve müfredatı anında geri yükleyin.
                         </p>
                         <input type="file" id="dbImportFileInput" accept=".json" class="block w-full text-xs file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer" onchange="importDatabaseJSON(event)">
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-amber-500/30 space-y-2" style="background: rgba(245, 158, 11, 0.05)">
+                        <h5 class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                            <span>🧹</span> Tüm Günleri Sıfırla (Boş Takvim)
+                        </h5>
+                        <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                            Özel müfredatınızı korur; sadece takvimdeki tüm 14 günün ders oturumlarını temizleyip sıfırdan plan yapmanız için boş bir takvim hazırlar.
+                        </p>
+                        <button onclick="confirmClearAllDays(); closeDatabaseModal();" class="px-4 py-2 rounded-xl bg-amber-600/20 hover:bg-amber-600/30 text-amber-400 border border-amber-500/40 text-xs font-bold transition-all cursor-pointer">
+                            🧹 Tüm Günleri Sıfırla (Boşalt)
+                        </button>
                     </div>
 
                     <div class="p-4 rounded-xl border border-rose-500/30 space-y-2" style="background: rgba(244, 63, 94, 0.05)">
@@ -2732,26 +2752,58 @@
         // NLP INCREMENTAL MODIFICATION & ACTIVE PLAN EDIT CONFIRMATION
         let pendingChangeAction = null;
 
+        function confirmClearCurrentDay() {
+            const dayData = activePlan.find(d => d.day === currentActiveDay);
+            const sessionCount = (dayData && dayData.sessions) ? dayData.sessions.length : 0;
+            if (sessionCount === 0) {
+                showToast(`${currentActiveDay}. gün zaten boş!`, 'warning', '⚠️ Uyarı');
+                return;
+            }
+            promptPlanChangeConfirmation({
+                action: 'clear_day',
+                targetDays: [currentActiveDay],
+                subject: { key: 'all', name: 'Tüm Dersler', topics: [] },
+                durationMinutes: 0,
+                rawPrompt: `${currentActiveDay}. günü tamamen temizle`
+            });
+        }
+
+        function confirmClearAllDays() {
+            promptPlanChangeConfirmation({
+                action: 'clear_all',
+                targetDays: activePlan.map(d => d.day),
+                subject: { key: 'all', name: 'Tüm Program', topics: [] },
+                durationMinutes: 0,
+                rawPrompt: 'Tüm günleri sıfırla (boş program)'
+            });
+        }
+
         function detectIncrementalModification(promptText) {
             let p = promptText.toLowerCase();
             p = p.replace(/([a-zçğıöşü])(\d)/gi, '$1 $2').replace(/(\d)([a-zçğıöşü])/gi, '$1 $2');
-            
-            // Check if prompt contains modification action words
-            const isAdd = /\b(ekle|ilave|koy|yaz|dahil\s*et)\b/i.test(p);
-            const isRemove = /\b(çıkar|cikar|kaldır|kaldir|sil|iptal|at)\b/i.test(p);
-            const isUpdate = /\b(yap|güncelle|guncelle|değiştir|degistir|ayarla|olsun|yerine)\b/i.test(p);
+            const pNorm = p.replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u');
             
             if (currentNlpMode === 'fresh') return null;
-            if (!isAdd && !isRemove && !isUpdate && currentNlpMode !== 'active') return null;
+
+            // 1. Check if prompt is to Clear Entire Schedule (Tüm Günleri Sıfırla / Program Olmasın)
+            const isClearAll = /\b(tum|butun|her)\s*(?:gunleri|gunu|gun|programi|program|takvimi|takvim|dersleri|oturumlari)\s*(?:sifirla|sil|temizle|bosalt|olmasin|kaldir)\b/i.test(pNorm) ||
+                               /\bprogram\s*(olmasin|bosalt|silinsin|temizlensin|sifirlansin)\b/i.test(pNorm) ||
+                               /\b(programi|program|takvimi|takvim)\s*(sifirla|temizle|bosalt|sil)\b/i.test(pNorm) ||
+                               /\b(tum\s*gunleri\s*sifirla|tum\s*gunleri\s*sil|butun\s*gunleri\s*sil|tum\s*gunleri\s*temizle)\b/i.test(pNorm);
             
-            // If it is asking a question (contains '?' or question words and not an explicit modify action)
-            if ((p.includes('?') || /\b(kaç|kac|ne|nasıl|nasil|hangi|nerede)\b/i.test(p)) && !isAdd && !isRemove) {
-                return null;
+            if (isClearAll) {
+                return {
+                    action: 'clear_all',
+                    targetDays: activePlan.map(d => d.day),
+                    subject: { key: 'all', name: 'Tüm Program', topics: [] },
+                    durationMinutes: 0,
+                    rawPrompt: promptText
+                };
             }
 
-            // Extract target days
+            // 2. Extract target days
             let targetDays = [];
-            const dayMatches = [...p.matchAll(/(\d+)\s*\.?\s*(?:gün|gun)/gi)];
+            const dayMatches = [...pNorm.matchAll(/(\d+)\s*\.?\s*(?:gun)/gi)];
             if (dayMatches.length > 0) {
                 dayMatches.forEach(m => {
                     const d = parseInt(m[1]);
@@ -2762,47 +2814,77 @@
             }
             
             if (targetDays.length === 0) {
-                if (/\b(tüm|tum|her|bütün|butun)\s*(?:gün|gun)/i.test(p) || /\b(aktif\s*program|programa|takvime)\b/i.test(p)) {
+                if (/\b(tum|her|butun)\s*(?:gun)/i.test(pNorm) || /\b(aktif\s*program|programa|takvime)\b/i.test(pNorm)) {
                     targetDays = activePlan.map(d => d.day);
+                } else if (/\b(bugunu|bugun|bu\s*gun)\b/i.test(pNorm)) {
+                    targetDays = [currentActiveDay];
                 } else {
                     targetDays = [currentActiveDay];
                 }
             }
-            
-            // Extract subject
+
+            // 3. Extract subject
             let matchedSubject = null;
             for (const [key, sub] of Object.entries(appCurriculum)) {
                 const subName = (sub.name || key).toLowerCase();
-                if (p.includes(subName) || p.includes(key.toLowerCase())) {
+                const subNameNorm = subName.replace(/ç/g, 'c').replace(/ğ/g, 'g').replace(/ı/g, 'i').replace(/ö/g, 'o').replace(/ş/g, 's').replace(/ü/g, 'u');
+                if (pNorm.includes(subNameNorm) || pNorm.includes(key.toLowerCase())) {
                     matchedSubject = { key: key, name: sub.name, topics: sub.topics || [] };
                     break;
                 }
             }
             if (!matchedSubject) {
-                if (p.includes('ayt mat') || p.includes('ayt') || p.includes('fonksiyon') || p.includes('polinom') || p.includes('trigonometri')) {
+                if (pNorm.includes('ayt mat') || pNorm.includes('ayt') || pNorm.includes('fonksiyon') || pNorm.includes('polinom') || pNorm.includes('trigonometri')) {
                     matchedSubject = { key: 'ayt_matematik', name: 'AYT Matematik', topics: (appCurriculum.ayt_matematik && appCurriculum.ayt_matematik.topics) || [] };
-                } else if (p.includes('tyt mat') || p.includes('tyt') || p.includes('temel mat') || p.includes('problem')) {
+                } else if (pNorm.includes('tyt mat') || pNorm.includes('tyt') || pNorm.includes('temel mat') || pNorm.includes('problem')) {
                     matchedSubject = { key: 'tyt_matematik', name: 'TYT Matematik', topics: (appCurriculum.tyt_matematik && appCurriculum.tyt_matematik.topics) || [] };
-                } else if (p.includes('geo') || p.includes('üçgen') || p.includes('ucgen')) {
+                } else if (pNorm.includes('geo') || pNorm.includes('ucgen')) {
                     matchedSubject = { key: 'geometri', name: 'Geometri', topics: (appCurriculum.geometri && appCurriculum.geometri.topics) || [] };
-                } else if (p.includes('edebiyat') || p.includes('türkçe') || p.includes('turkce') || p.includes('paragraf')) {
+                } else if (pNorm.includes('edebiyat') || pNorm.includes('turkce') || pNorm.includes('paragraf')) {
                     matchedSubject = { key: 'edebiyat', name: 'Edebiyat', topics: (appCurriculum.edebiyat && appCurriculum.edebiyat.topics) || [] };
-                } else if (p.includes('fizik')) {
+                } else if (pNorm.includes('fizik')) {
                     matchedSubject = { key: 'fizik', name: 'Fizik', topics: (appCurriculum.fizik && appCurriculum.fizik.topics) || [] };
-                } else if (p.includes('kimya')) {
+                } else if (pNorm.includes('kimya')) {
                     matchedSubject = { key: 'kimya', name: 'Kimya', topics: (appCurriculum.kimya && appCurriculum.kimya.topics) || [] };
-                } else if (p.includes('biyo')) {
+                } else if (pNorm.includes('biyo')) {
                     matchedSubject = { key: 'biyoloji', name: 'Biyoloji', topics: (appCurriculum.biyoloji && appCurriculum.biyoloji.topics) || [] };
-                } else if (p.includes('tarih')) {
+                } else if (pNorm.includes('tarih')) {
                     matchedSubject = { key: 'tarih', name: 'Tarih', topics: (appCurriculum.tarih && appCurriculum.tarih.topics) || [] };
-                } else if (p.includes('cografya') || p.includes('coğrafya')) {
+                } else if (pNorm.includes('cografya')) {
                     matchedSubject = { key: 'cografya', name: 'Coğrafya', topics: (appCurriculum.cografya && appCurriculum.cografya.topics) || [] };
                 }
             }
+
+            // 4. Check if prompt is to Clear Specific Day (Günü tamamen sil / temizle / sıfırla / boşalt)
+            const isClearDay = (/\b(?:gunu|gunun|gun)\s*(?:tamamen\s*)?(?:sifirla|sil|temizle|bosalt|bos\s*olsun|kaldir|olmasin)\b/i.test(pNorm) ||
+                                /\b(?:bugunu|bu\s*gunu)\s*(?:tamamen\s*)?(?:sifirla|sil|temizle|bosalt|bos\s*olsun|kaldir)\b/i.test(pNorm) ||
+                                /\b(?:bos\s*gun)\b/i.test(pNorm)) && !matchedSubject;
             
+            if (isClearDay) {
+                return {
+                    action: 'clear_day',
+                    targetDays: targetDays,
+                    subject: { key: 'all', name: 'Tüm Dersler', topics: [] },
+                    durationMinutes: 0,
+                    rawPrompt: promptText
+                };
+            }
+
+            // Action words
+            const isAdd = /\b(ekle|ilave|koy|yaz|dahil\s*et)\b/i.test(pNorm);
+            const isRemove = /\b(cikar|kaldir|sil|iptal|at)\b/i.test(pNorm);
+            const isUpdate = /\b(yap|guncelle|degistir|ayarla|olsun|yerine)\b/i.test(pNorm);
+            
+            if (!isAdd && !isRemove && !isUpdate && currentNlpMode !== 'active') return null;
+            
+            // If it is asking a question (contains '?' or question words and not an explicit modify action)
+            if ((pNorm.includes('?') || /\b(kac|ne|nasil|hangi|nerede)\b/i.test(pNorm)) && !isAdd && !isRemove) {
+                return null;
+            }
+
             // Extract duration
             let durationMinutes = 60;
-            const durMatch = p.match(/(\d+(?:[.,]\d+)?)\s*(saat|sa|s|dakika|dakka|dk)\b/i);
+            const durMatch = pNorm.match(/(\d+(?:[.,]\d+)?)\s*(saat|sa|s|dakika|dakka|dk)\b/i);
             if (durMatch) {
                 const val = parseFloat(durMatch[1].replace(',', '.'));
                 const unit = durMatch[2].toLowerCase();
@@ -2848,7 +2930,17 @@
             let badgeColor = 'bg-indigo-500/15 border-indigo-500/30';
             let actionDesc = '';
             
-            if (modAction.action === 'add') {
+            if (modAction.action === 'clear_all') {
+                icon = '🧹';
+                badgeColor = 'bg-rose-500/15 border-rose-500/30 text-rose-400';
+                actionDesc = `<strong>Tüm 14 günün</strong> çalışma programı sıfırlanacak ve bütün ders oturumları temizlenecektir (boş program oluşturulacak).`;
+                if (freshBtn) freshBtn.style.display = 'none';
+            } else if (modAction.action === 'clear_day') {
+                icon = '🗑️';
+                badgeColor = 'bg-rose-500/15 border-rose-500/30 text-rose-400';
+                actionDesc = `<strong>${daysLabel}</strong> içindeki <strong>tüm ders oturumları tamamen silinecek</strong> ve gün boşaltılacak.`;
+                if (freshBtn) freshBtn.style.display = 'none';
+            } else if (modAction.action === 'add') {
                 icon = '➕';
                 badgeColor = 'bg-indigo-500/15 border-indigo-500/30';
                 actionDesc = `<strong>${daysLabel}</strong> için <strong>${modAction.subject.name}</strong> (${modAction.durationMinutes} dk / ${(modAction.durationMinutes/60).toFixed(1)} sa) ders oturumu eklenecek.`;
@@ -2887,6 +2979,47 @@
         async function applyPendingPlanChange() {
             if (!pendingChangeAction) return;
             const act = pendingChangeAction;
+            
+            if (act.action === 'clear_all') {
+                activePlan.forEach(d => {
+                    d.sessions.forEach(s => delete completedSessions[s.id]);
+                    d.sessions = [];
+                    d.totalMinutes = 0;
+                    d.timeRange = 'Serbest Zaman';
+                });
+                await AppDB.saveActivePlan(activePlan);
+                await AppDB.logActivity('SILME', 'Tüm 14 günlük program sıfırlandı ve boşaltıldı.', 'Tüm Günler');
+                closePlanChangeConfirmModal();
+                renderDaysTabBar();
+                renderActiveDay();
+                renderFullTable();
+                updateOverallProgress();
+                generateAICoachInsights();
+                showToast('Tüm çalışma programı sıfırlandı ve boşaltıldı.', 'info', '🧹 Program Sıfırlandı');
+                return;
+            }
+            
+            if (act.action === 'clear_day') {
+                act.targetDays.forEach(dayNum => {
+                    const dayData = activePlan.find(d => d.day === dayNum);
+                    if (dayData) {
+                        dayData.sessions.forEach(s => delete completedSessions[s.id]);
+                        dayData.sessions = [];
+                        recalculateDaySchedule(dayNum);
+                    }
+                });
+                await AppDB.saveActivePlan(activePlan);
+                await AppDB.logActivity('SILME', `${act.targetDays.join(', ')}. günün tüm ders oturumları temizlendi.`, `Gün(ler): ${act.targetDays.join(', ')}`);
+                closePlanChangeConfirmModal();
+                renderDaysTabBar();
+                renderActiveDay();
+                renderFullTable();
+                updateOverallProgress();
+                generateAICoachInsights();
+                showToast(`${act.targetDays.join(', ')}. günün tüm dersleri silindi.`, 'info', '🗑️ Gün Temizlendi');
+                return;
+            }
+
             let totalAffected = 0;
             
             act.targetDays.forEach(dayNum => {
