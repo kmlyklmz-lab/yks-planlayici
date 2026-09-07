@@ -183,6 +183,10 @@
                     </button>
                 </div>
 
+                <button onclick="openDatabaseModal()" id="dbStatusHeaderBtn" title="Veritabanı & İşlem Kütüğü (IndexedDB)" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all shadow-sm">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>💾 Veritabanı</span>
+                </button>
                 <button onclick="exportToICS()" class="px-3 py-1.5 text-xs font-medium rounded-lg border theme-card flex items-center gap-1.5 transition-all">
                     📅 <span class="hidden sm:inline">Takvime Aktar</span> (.ics)
                 </button>
@@ -721,6 +725,142 @@
             </div>
         </div>
 
+        <!-- Database & Activity Logs Management Modal -->
+        <div id="databaseModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+            <div class="theme-panel p-6 rounded-2xl max-w-3xl w-full border border-emerald-500/40 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
+                <div class="flex justify-between items-center border-b pb-3 shrink-0" style="border-color: var(--border-color)">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-xl">💾</span>
+                        <div>
+                            <h4 class="text-base font-bold text-emerald-400">Veritabanı & İşlem Geçmişi (IndexedDB)</h4>
+                            <p class="text-[11px]" style="color: var(--text-muted)">Tüm çalışma planınız, müfredatınız ve CRUD işlemleriniz tarayıcı veritabanında saklanır.</p>
+                        </div>
+                    </div>
+                    <button onclick="closeDatabaseModal()" class="text-xl opacity-60 hover:opacity-100" style="color: var(--text-muted)">&times;</button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex items-center gap-2 border-b pb-2 shrink-0" style="border-color: var(--border-color)">
+                    <button onclick="setDbModalTab('logs')" id="dbTabLogsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md">
+                        📜 İşlem Kütüğü (CRUD Logları)
+                    </button>
+                    <button onclick="setDbModalTab('backup')" id="dbTabBackupBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100">
+                        💾 Yedekleme & Geri Yükleme
+                    </button>
+                    <button onclick="setDbModalTab('stats')" id="dbTabStatsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100">
+                        📊 Tablo Durumu & İstatistikler
+                    </button>
+                </div>
+
+                <!-- Tab 1: Activity Logs -->
+                <div id="dbTabLogsContent" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="flex justify-between items-center flex-wrap gap-2 text-xs">
+                        <span class="font-medium" style="color: var(--text-muted)">Son yapılan ekleme, silme, güncelleme ve plan işlemleri:</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="clearDbLogs()" class="px-2.5 py-1 rounded-lg border theme-card hover:border-rose-500 text-[11px] text-rose-400 font-semibold transition-all">
+                                🗑️ Logları Temizle
+                            </button>
+                            <button onclick="refreshDbLogsUI()" class="px-2.5 py-1 rounded-lg border theme-card hover:border-emerald-500 text-[11px] text-emerald-400 font-semibold transition-all">
+                                🔄 Yenile
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="border rounded-xl overflow-hidden" style="border-color: var(--border-color); background: var(--bg-card)">
+                        <table class="w-full text-left text-xs">
+                            <thead class="theme-panel border-b text-[11px]" style="border-color: var(--border-color); color: var(--text-muted)">
+                                <tr>
+                                    <th class="p-2.5">Zaman</th>
+                                    <th class="p-2.5">İşlem</th>
+                                    <th class="p-2.5">Açıklama</th>
+                                    <th class="p-2.5">Detay</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dbLogsTableBody" class="divide-y" style="border-color: var(--border-color)">
+                                <!-- Dynamic Log Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Backup & Restore -->
+                <div id="dbTabBackupContent" class="space-y-4 hidden flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="p-4 rounded-xl border space-y-2" style="background: var(--bg-card); border-color: var(--border-color)">
+                        <h5 class="text-xs font-bold text-emerald-400 flex items-center gap-1.5">
+                            <span>📥</span> Veritabanı Yedeği İndir (JSON Export)
+                        </h5>
+                        <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                            Mevcut 14 günlük takviminizi, özelleştirilmiş müfredatınızı, günlük limitinizi ve tüm geçmişinizi tek bir <strong>.json</strong> dosyası olarak bilgisayarınıza kaydedin.
+                        </p>
+                        <button onclick="exportDatabaseJSON()" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all cursor-pointer">
+                            💾 Tüm Veritabanını JSON Olarak İndir
+                        </button>
+                    </div>
+
+                    <div class="p-4 rounded-xl border space-y-2" style="background: var(--bg-card); border-color: var(--border-color)">
+                        <h5 class="text-xs font-bold text-indigo-400 flex items-center gap-1.5">
+                            <span>📤</span> Veritabanı Yedeği Yükle (JSON Import)
+                        </h5>
+                        <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                            Daha önce indirdiğiniz veya başka bir cihazda hazırladığınız yedek JSON dosyasını yükleyerek takvimi ve müfredatı anında geri yükleyin.
+                        </p>
+                        <input type="file" id="dbImportFileInput" accept=".json" class="block w-full text-xs file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-500 cursor-pointer" onchange="importDatabaseJSON(event)">
+                    </div>
+
+                    <div class="p-4 rounded-xl border border-rose-500/30 space-y-2" style="background: rgba(244, 63, 94, 0.05)">
+                        <h5 class="text-xs font-bold text-rose-400 flex items-center gap-1.5">
+                            <span>⚠️</span> Veritabanını Fabrika Ayarlarına Sıfırla
+                        </h5>
+                        <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                            Tüm özel müfredatları, eklenip çıkarılan oturumları sıfırlar ve varsayılan 14 günlük orijinal çalışma planına geri döner.
+                        </p>
+                        <button onclick="confirmResetDatabase()" class="px-4 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/40 text-xs font-bold transition-all cursor-pointer">
+                            🔄 Veritabanını Sıfırla
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Table Stats -->
+                <div id="dbTabStatsContent" class="space-y-3 hidden flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div class="p-3.5 rounded-xl border theme-card space-y-1">
+                            <span class="text-[11px] font-semibold" style="color: var(--text-muted)">Veritabanı Motoru</span>
+                            <div class="font-bold text-emerald-400 flex items-center gap-1.5">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                                HTML5 IndexedDB (YKSPlanlayiciDB v1)
+                            </div>
+                        </div>
+                        <div class="p-3.5 rounded-xl border theme-card space-y-1">
+                            <span class="text-[11px] font-semibold" style="color: var(--text-muted)">Senkron Durumu</span>
+                            <div class="font-bold text-indigo-400">IndexedDB + LocalStorage (Çift Katmanlı Kalıcılık)</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl border theme-card space-y-1">
+                            <span class="text-[11px] font-semibold" style="color: var(--text-muted)">Kayıtlı Gün Sayısı (study_plans)</span>
+                            <div class="font-bold text-sm" id="dbStatsDaysCount">14 Gün</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl border theme-card space-y-1">
+                            <span class="text-[11px] font-semibold" style="color: var(--text-muted)">Kayıtlı Ders & Sınav Alanı (curriculum)</span>
+                            <div class="font-bold text-sm" id="dbStatsSubjectsCount">8 Ders</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl border theme-card space-y-1">
+                            <span class="text-[11px] font-semibold" style="color: var(--text-muted)">Toplam Konu Kütüphanesi</span>
+                            <div class="font-bold text-sm" id="dbStatsTopicsCount">40+ Konu</div>
+                        </div>
+                        <div class="p-3.5 rounded-xl border theme-card space-y-1">
+                            <span class="text-[11px] font-semibold" style="color: var(--text-muted)">Toplam CRUD İşlem Kaydı (activity_logs)</span>
+                            <div class="font-bold text-sm text-amber-400" id="dbStatsLogsCount">0 Kayıt</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-3 border-t shrink-0" style="border-color: var(--border-color)">
+                    <button onclick="closeDatabaseModal()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/20">
+                        Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- Pomodoro Focus Modal -->
@@ -767,16 +907,384 @@
         let activePlan = [];
         let currentActiveDay = 1;
         let viewMode = 'cards';
-        let currentTheme = localStorage.getItem('yks_theme') || 'slate-dark';
-        let completedSessions = JSON.parse(localStorage.getItem('yks_completed_sessions') || '{}');
-        let appCurriculum = JSON.parse(localStorage.getItem('yks_custom_curriculum') || 'null') || JSON.parse(JSON.stringify(CURRICULUM));
+        let currentTheme = 'slate-dark';
+        let completedSessions = {};
+        let appCurriculum = JSON.parse(JSON.stringify(CURRICULUM));
+        let globalDailyLimit = 10;
         
-        let llmConfig = JSON.parse(localStorage.getItem('yks_llm_config') || JSON.stringify({
+        let llmConfig = {
             provider: 'ollama',
             endpoint: 'http://localhost:11434/api/generate',
             model: 'qwen2.5:latest',
             isActive: false
-        }));
+        };
+
+        // ==========================================
+        // 💾 APP DATABASE MANAGER (IndexedDB + Storage)
+        // ==========================================
+        const AppDB = {
+            dbName: 'YKSPlanlayiciDB',
+            dbVersion: 1,
+            db: null,
+            isReady: false,
+            logsCache: [],
+
+            async open() {
+                return new Promise((resolve) => {
+                    if (!window.indexedDB) {
+                        console.warn('IndexedDB not supported, falling back to LocalStorage');
+                        this.isReady = true;
+                        resolve(null);
+                        return;
+                    }
+                    try {
+                        const request = indexedDB.open(this.dbName, this.dbVersion);
+                        request.onupgradeneeded = (event) => {
+                            const db = event.target.result;
+                            if (!db.objectStoreNames.contains('settings')) {
+                                db.createObjectStore('settings', { keyPath: 'key' });
+                            }
+                            if (!db.objectStoreNames.contains('study_plans')) {
+                                db.createObjectStore('study_plans', { keyPath: 'day' });
+                            }
+                            if (!db.objectStoreNames.contains('curriculum')) {
+                                db.createObjectStore('curriculum', { keyPath: 'subjectKey' });
+                            }
+                            if (!db.objectStoreNames.contains('activity_logs')) {
+                                db.createObjectStore('activity_logs', { keyPath: 'id', autoIncrement: true });
+                            }
+                        };
+                        request.onsuccess = (event) => {
+                            this.db = event.target.result;
+                            this.isReady = true;
+                            resolve(this.db);
+                        };
+                        request.onerror = (event) => {
+                            console.error('IndexedDB open error:', event.target.error);
+                            this.isReady = true;
+                            resolve(null);
+                        };
+                    } catch (e) {
+                        console.error('IndexedDB exception:', e);
+                        this.isReady = true;
+                        resolve(null);
+                    }
+                });
+            },
+
+            async initData(defaultMaster, defaultCurriculum) {
+                await this.open();
+                await this.loadLogs();
+
+                // 1. Settings
+                const savedTheme = await this.loadSetting('theme');
+                if (savedTheme) currentTheme = savedTheme;
+
+                const savedLimit = await this.loadSetting('globalDailyLimit');
+                if (savedLimit) globalDailyLimit = parseFloat(savedLimit);
+
+                const savedCompleted = await this.loadSetting('completedSessions');
+                if (savedCompleted) completedSessions = savedCompleted;
+
+                const savedLLM = await this.loadSetting('llmConfig');
+                if (savedLLM) llmConfig = savedLLM;
+
+                // 2. Curriculum
+                const storedCurr = await this.loadCurriculum();
+                if (storedCurr && Object.keys(storedCurr).length > 0) {
+                    appCurriculum = storedCurr;
+                } else {
+                    appCurriculum = JSON.parse(JSON.stringify(defaultCurriculum));
+                    await this.saveCurriculum(appCurriculum);
+                }
+
+                // 3. Plan
+                const storedPlan = await this.loadActivePlan();
+                if (storedPlan && Array.isArray(storedPlan) && storedPlan.length > 0) {
+                    activePlan = storedPlan;
+                } else {
+                    activePlan = JSON.parse(JSON.stringify(defaultMaster));
+                    await this.saveActivePlan(activePlan);
+                    await this.logActivity('VERİTABANI_BAŞLATILDI', '14 Günlük çalışma takvimi IndexedDB veritabanına kaydedildi.', 'study_plans tablosu');
+                }
+
+                updateDbStatsBadge();
+            },
+
+            async saveActivePlan(plan) {
+                if (!plan || !Array.isArray(plan)) return;
+                try { localStorage.setItem('yks_active_plan_v2', JSON.stringify(plan)); } catch (e) {}
+                if (!this.db) return;
+                return new Promise((resolve) => {
+                    try {
+                        const tx = this.db.transaction('study_plans', 'readwrite');
+                        const store = tx.objectStore('study_plans');
+                        store.clear();
+                        plan.forEach(d => store.put(d));
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            },
+
+            async loadActivePlan() {
+                if (this.db) {
+                    try {
+                        const res = await new Promise((resolve) => {
+                            const tx = this.db.transaction('study_plans', 'readonly');
+                            const store = tx.objectStore('study_plans');
+                            const req = store.getAll();
+                            req.onsuccess = () => resolve(req.result);
+                            req.onerror = () => resolve(null);
+                        });
+                        if (res && res.length > 0) {
+                            res.sort((a, b) => a.day - b.day);
+                            return res;
+                        }
+                    } catch (e) {}
+                }
+                const local = localStorage.getItem('yks_active_plan_v2');
+                if (local) {
+                    try { return JSON.parse(local); } catch (e) {}
+                }
+                return null;
+            },
+
+            async saveCurriculum(curr) {
+                if (!curr) return;
+                try { localStorage.setItem('yks_custom_curriculum', JSON.stringify(curr)); } catch (e) {}
+                if (!this.db) return;
+                return new Promise((resolve) => {
+                    try {
+                        const tx = this.db.transaction('curriculum', 'readwrite');
+                        const store = tx.objectStore('curriculum');
+                        store.clear();
+                        Object.entries(curr).forEach(([key, val]) => {
+                            store.put({ subjectKey: key, ...val });
+                        });
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            },
+
+            async loadCurriculum() {
+                if (this.db) {
+                    try {
+                        const res = await new Promise((resolve) => {
+                            const tx = this.db.transaction('curriculum', 'readonly');
+                            const store = tx.objectStore('curriculum');
+                            const req = store.getAll();
+                            req.onsuccess = () => resolve(req.result);
+                            req.onerror = () => resolve(null);
+                        });
+                        if (res && res.length > 0) {
+                            const map = {};
+                            res.forEach(item => {
+                                const { subjectKey, ...rest } = item;
+                                map[subjectKey] = rest;
+                            });
+                            return map;
+                        }
+                    } catch (e) {}
+                }
+                const local = localStorage.getItem('yks_custom_curriculum');
+                if (local) {
+                    try { return JSON.parse(local); } catch (e) {}
+                }
+                return null;
+            },
+
+            async saveSetting(key, val) {
+                try { localStorage.setItem('yks_setting_' + key, JSON.stringify(val)); } catch (e) {}
+                if (!this.db) return;
+                return new Promise((resolve) => {
+                    try {
+                        const tx = this.db.transaction('settings', 'readwrite');
+                        const store = tx.objectStore('settings');
+                        store.put({ key: key, value: val, updatedAt: new Date().toISOString() });
+                        tx.oncomplete = () => resolve(true);
+                        tx.onerror = () => resolve(false);
+                    } catch (e) {
+                        resolve(false);
+                    }
+                });
+            },
+
+            async loadSetting(key) {
+                if (this.db) {
+                    try {
+                        const res = await new Promise((resolve) => {
+                            const tx = this.db.transaction('settings', 'readonly');
+                            const store = tx.objectStore('settings');
+                            const req = store.get(key);
+                            req.onsuccess = () => resolve(req.result ? req.result.value : null);
+                            req.onerror = () => resolve(null);
+                        });
+                        if (res !== null && res !== undefined) return res;
+                    } catch (e) {}
+                }
+                const local = localStorage.getItem('yks_setting_' + key) || localStorage.getItem('yks_' + key);
+                if (local) {
+                    try { return JSON.parse(local); } catch (e) { return local; }
+                }
+                return null;
+            },
+
+            async logActivity(actionType, description, details = '') {
+                const now = new Date();
+                const logEntry = {
+                    timestamp: now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' (' + now.toLocaleDateString('tr-TR') + ')',
+                    actionType: actionType,
+                    description: description,
+                    details: typeof details === 'object' ? JSON.stringify(details) : String(details || '-')
+                };
+
+                this.logsCache.unshift(logEntry);
+                if (this.logsCache.length > 200) this.logsCache.pop();
+                try { localStorage.setItem('yks_activity_logs', JSON.stringify(this.logsCache.slice(0, 50))); } catch (e) {}
+
+                if (this.db) {
+                    try {
+                        const tx = this.db.transaction('activity_logs', 'readwrite');
+                        const store = tx.objectStore('activity_logs');
+                        store.add(logEntry);
+                    } catch (e) {}
+                }
+                updateDbStatsBadge();
+            },
+
+            async loadLogs() {
+                if (this.db) {
+                    try {
+                        const res = await new Promise((resolve) => {
+                            const tx = this.db.transaction('activity_logs', 'readonly');
+                            const store = tx.objectStore('activity_logs');
+                            const req = store.getAll();
+                            req.onsuccess = () => resolve(req.result);
+                            req.onerror = () => resolve(null);
+                        });
+                        if (res && res.length > 0) {
+                            res.sort((a, b) => (b.id || 0) - (a.id || 0));
+                            this.logsCache = res;
+                            return res;
+                        }
+                    } catch (e) {}
+                }
+                const local = localStorage.getItem('yks_activity_logs');
+                if (local) {
+                    try {
+                        this.logsCache = JSON.parse(local) || [];
+                        return this.logsCache;
+                    } catch (e) {}
+                }
+                this.logsCache = [];
+                return [];
+            },
+
+            async clearLogs() {
+                this.logsCache = [];
+                localStorage.removeItem('yks_activity_logs');
+                if (this.db) {
+                    try {
+                        const tx = this.db.transaction('activity_logs', 'readwrite');
+                        tx.objectStore('activity_logs').clear();
+                    } catch (e) {}
+                }
+                await this.logActivity('LOGLAR_TEMIZLENDI', 'İşlem geçmişi kütüğü temizlendi.');
+                renderDbLogsUI();
+            },
+
+            async exportJSON() {
+                const dump = {
+                    appName: 'YKS Akıllı Çalışma Planlayıcı',
+                    version: 1.0,
+                    exportedAt: new Date().toISOString(),
+                    globalDailyLimit: globalDailyLimit,
+                    theme: currentTheme,
+                    completedSessions: completedSessions,
+                    activePlan: activePlan,
+                    curriculum: appCurriculum,
+                    activityLogs: this.logsCache
+                };
+
+                const blob = new Blob([JSON.stringify(dump, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `yks_veritabani_yedek_${new Date().toISOString().slice(0, 10)}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Tüm veritabanı JSON yedeği indirildi.', 'success', '💾 Yedek İndirildi');
+                await this.logActivity('YEDEK_INDIRILDI', 'Veritabanı JSON yedeği dışa aktarıldı.');
+            },
+
+            async importJSON(jsonData) {
+                try {
+                    if (!jsonData || typeof jsonData !== 'object') throw new Error('Geçersiz JSON formatı.');
+                    if (jsonData.activePlan && Array.isArray(jsonData.activePlan)) {
+                        activePlan = jsonData.activePlan;
+                        await this.saveActivePlan(activePlan);
+                    }
+                    if (jsonData.curriculum && typeof jsonData.curriculum === 'object') {
+                        appCurriculum = jsonData.curriculum;
+                        await this.saveCurriculum(appCurriculum);
+                    }
+                    if (jsonData.globalDailyLimit) {
+                        setGlobalDailyLimit(jsonData.globalDailyLimit);
+                        await this.saveSetting('globalDailyLimit', globalDailyLimit);
+                    }
+                    if (jsonData.theme) {
+                        setTheme(jsonData.theme);
+                        await this.saveSetting('theme', currentTheme);
+                    }
+                    if (jsonData.completedSessions) {
+                        completedSessions = jsonData.completedSessions;
+                        await this.saveSetting('completedSessions', completedSessions);
+                    }
+                    await this.logActivity('YEDEK_YUKLENDI', 'Dışarıdan JSON veritabanı yedeği başarıyla yüklendi.');
+                    
+                    renderDaysTabBar();
+                    renderActiveDay();
+                    renderFullTable();
+                    renderCurriculumLibrary();
+                    updateOverallProgress();
+                    generateAICoachInsights();
+                    showToast('Veritabanı yedeği başarıyla geri yüklendi!', 'success', '✅ Geri Yüklendi');
+                    closeDatabaseModal();
+                } catch (err) {
+                    showToast('Yedek dosyası yüklenirken hata: ' + err.message, 'error', 'Hata');
+                }
+            },
+
+            async resetToDefaults(defaultMaster, defaultCurriculum) {
+                activePlan = JSON.parse(JSON.stringify(defaultMaster));
+                appCurriculum = JSON.parse(JSON.stringify(defaultCurriculum));
+                completedSessions = {};
+                globalDailyLimit = 10;
+
+                await this.saveActivePlan(activePlan);
+                await this.saveCurriculum(appCurriculum);
+                await this.saveSetting('completedSessions', {});
+                await this.saveSetting('globalDailyLimit', 10);
+                await this.logActivity('FABRIKA_AYARLARI', 'Tüm veritabanı orijinal 14 günlük haline sıfırlandı.');
+
+                renderDaysTabBar();
+                renderActiveDay();
+                renderFullTable();
+                renderCurriculumLibrary();
+                updateOverallProgress();
+                generateAICoachInsights();
+                showToast('Veritabanı orijinal durumuna sıfırlandı.', 'warning', '🔄 Sıfırlandı');
+                closeDatabaseModal();
+            }
+        };
 
         // Modern Non-Intrusive Toast System
         function showToast(message, type = 'info', title = '') {
@@ -836,16 +1344,145 @@
             if (banner) banner.classList.add('hidden');
         }
 
-        // Global Daily Limits Management (1 to 24 Hours)
-        let globalDailyLimit = parseFloat(localStorage.getItem('yks_global_daily_limit') || '10');
+        // Database Modal UI Handlers
+        function openDatabaseModal() {
+            setDbModalTab('logs');
+            refreshDbLogsUI();
+            updateDbStatsBadge();
+            document.getElementById('databaseModal').classList.remove('hidden');
+        }
 
+        function closeDatabaseModal() {
+            document.getElementById('databaseModal').classList.add('hidden');
+        }
+
+        function setDbModalTab(tabName) {
+            const tabLogsBtn = document.getElementById('dbTabLogsBtn');
+            const tabBackupBtn = document.getElementById('dbTabBackupBtn');
+            const tabStatsBtn = document.getElementById('dbTabStatsBtn');
+
+            const contentLogs = document.getElementById('dbTabLogsContent');
+            const contentBackup = document.getElementById('dbTabBackupContent');
+            const contentStats = document.getElementById('dbTabStatsContent');
+
+            // Reset buttons
+            [tabLogsBtn, tabBackupBtn, tabStatsBtn].forEach(b => {
+                if (b) b.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100 cursor-pointer';
+            });
+            // Hide contents
+            [contentLogs, contentBackup, contentStats].forEach(c => {
+                if (c) c.classList.add('hidden');
+            });
+
+            if (tabName === 'logs') {
+                if (tabLogsBtn) tabLogsBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md cursor-pointer';
+                if (contentLogs) contentLogs.classList.remove('hidden');
+                renderDbLogsUI();
+            } else if (tabName === 'backup') {
+                if (tabBackupBtn) tabBackupBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md cursor-pointer';
+                if (contentBackup) contentBackup.classList.remove('hidden');
+            } else if (tabName === 'stats') {
+                if (tabStatsBtn) tabStatsBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md cursor-pointer';
+                if (contentStats) contentStats.classList.remove('hidden');
+                updateDbStatsBadge();
+            }
+        }
+
+        function renderDbLogsUI() {
+            const tbody = document.getElementById('dbLogsTableBody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+
+            const logs = AppDB.logsCache || [];
+            if (logs.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center italic opacity-60 text-xs">Henüz kayıtlı işlem kütüğü bulunmuyor.</td></tr>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-500/5 transition-colors';
+
+                let badgeColor = 'bg-slate-500/20 text-slate-300';
+                if (log.actionType.includes('EKLE') || log.actionType.includes('EKLENDI')) badgeColor = 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+                else if (log.actionType.includes('SIL') || log.actionType.includes('SILINDI')) badgeColor = 'bg-rose-500/20 text-rose-400 border border-rose-500/30';
+                else if (log.actionType.includes('GUNCEL') || log.actionType.includes('LIMIT')) badgeColor = 'bg-amber-500/20 text-amber-400 border border-amber-500/30';
+                else if (log.actionType.includes('YENI') || log.actionType.includes('PLAN')) badgeColor = 'bg-purple-500/20 text-purple-400 border border-purple-500/30';
+
+                tr.innerHTML = `
+                    <td class="p-2.5 whitespace-nowrap font-mono text-[10px]" style="color: var(--text-muted)">${log.timestamp}</td>
+                    <td class="p-2.5 whitespace-nowrap"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${log.actionType}</span></td>
+                    <td class="p-2.5 font-medium" style="color: var(--text-main)">${log.description}</td>
+                    <td class="p-2.5 text-[11px] font-mono opacity-80" style="color: var(--text-muted)">${log.details || '-'}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function clearDbLogs() {
+            if (confirm('İşlem kütüğü geçmişini temizlemek istediğinize emin misiniz?')) {
+                await AppDB.clearLogs();
+                showToast('İşlem geçmişi logları temizlendi.', 'info', 'Temizlendi');
+            }
+        }
+
+        async function refreshDbLogsUI() {
+            await AppDB.loadLogs();
+            renderDbLogsUI();
+            updateDbStatsBadge();
+        }
+
+        function exportDatabaseJSON() {
+            AppDB.exportJSON();
+        }
+
+        function importDatabaseJSON(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    await AppDB.importJSON(parsed);
+                } catch (err) {
+                    showToast('Yüklenen dosya geçerli bir JSON veritabanı yedeği değil.', 'error', 'Geçersiz Dosya');
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        function confirmResetDatabase() {
+            if (confirm('DİKKAT: Tüm çalışma takviminiz, özel müfredat ve ayarlarınız sıfırlanacaktır. Orijinal 14 günlük programa dönmek istediğinize emin misiniz?')) {
+                AppDB.resetToDefaults(MASTER_14_DAYS_DATA, CURRICULUM);
+            }
+        }
+
+        function updateDbStatsBadge() {
+            const daysCountEl = document.getElementById('dbStatsDaysCount');
+            const subCountEl = document.getElementById('dbStatsSubjectsCount');
+            const topCountEl = document.getElementById('dbStatsTopicsCount');
+            const logCountEl = document.getElementById('dbStatsLogsCount');
+
+            if (daysCountEl) daysCountEl.innerText = (activePlan ? activePlan.length : 0) + ' Gün';
+            if (subCountEl) subCountEl.innerText = (appCurriculum ? Object.keys(appCurriculum).length : 0) + ' Ders / Alan';
+            
+            let totalTop = 0;
+            if (appCurriculum) {
+                Object.values(appCurriculum).forEach(s => totalTop += (s.topics ? s.topics.length : 0));
+            }
+            if (topCountEl) topCountEl.innerText = totalTop + ' Konu';
+            if (logCountEl) logCountEl.innerText = (AppDB.logsCache ? AppDB.logsCache.length : 0) + ' Kayıt';
+        }
+
+        // Global Daily Limits Management (1 to 24 Hours)
         function getGlobalDailyLimit() {
             return globalDailyLimit;
         }
 
-        function setGlobalDailyLimit(hoursVal) {
+        async function setGlobalDailyLimit(hoursVal) {
             globalDailyLimit = Math.min(24, Math.max(1, parseFloat(hoursVal) || 10));
-            localStorage.setItem('yks_global_daily_limit', String(globalDailyLimit));
+            await AppDB.saveSetting('globalDailyLimit', globalDailyLimit);
+            await AppDB.logActivity('LIMIT_DEGISTI', `Günlük maksimum çalışma limiti ${globalDailyLimit} saat olarak ayarlandı.`, `Limit: ${globalDailyLimit} Saat`);
             
             const sel = document.getElementById('globalDailyLimitSelect');
             if (sel) sel.value = String(globalDailyLimit);
@@ -861,6 +1498,7 @@
                     }
                 });
                 if (anyScaled) {
+                    await AppDB.saveActivePlan(activePlan);
                     renderActiveDay();
                     renderFullTable();
                     renderDaysTabBar();
@@ -884,8 +1522,8 @@
             recalculateDaySchedule(dayNum);
         }
 
-        function saveCurriculumToStorage() {
-            localStorage.setItem('yks_custom_curriculum', JSON.stringify(appCurriculum));
+        async function saveCurriculumToStorage() {
+            await AppDB.saveCurriculum(appCurriculum);
         }
 
         // Session Modal Handlers & Management
@@ -978,7 +1616,7 @@
             document.getElementById('editSessionModal').classList.add('hidden');
         }
 
-        function saveSessionModal() {
+        async function saveSessionModal() {
             const sessionId = document.getElementById('editSessionId').value;
             const targetDayNum = parseInt(document.getElementById('editSessionDaySelect').value);
             const origDayNum = parseInt(document.getElementById('editSessionDay').value);
@@ -1013,6 +1651,8 @@
                     timeSlot: ''
                 });
                 recalculateDaySchedule(targetDayNum);
+                await AppDB.saveActivePlan(activePlan);
+                await AppDB.logActivity('EKLEME', `${targetDayNum}. güne "${topicName}" (${duration} dk) eklendi.`, `${targetDayNum}. Gün`);
                 showToast(`"${topicName}" oturumu ${targetDayNum}. güne eklendi.`, 'success', 'Oturum Eklendi');
             } else {
                 // Edit existing session
@@ -1042,21 +1682,25 @@
                     }
                 }
                 recalculateDaySchedule(targetDayNum);
+                await AppDB.saveActivePlan(activePlan);
+                await AppDB.logActivity('GUNCELLEME', `"${topicName}" oturumu güncellendi (${duration} dk).`, `${targetDayNum}. Gün`);
                 showToast(`"${topicName}" oturumu güncellendi.`, 'success', 'Oturum Güncellendi');
             }
 
             closeEditSessionModal();
         }
 
-        function deleteSession(sessionId) {
+        async function deleteSession(sessionId) {
             for (const d of activePlan) {
                 const idx = d.sessions.findIndex(x => x.id === sessionId);
                 if (idx !== -1) {
                     const topicName = d.sessions[idx].topic;
                     d.sessions.splice(idx, 1);
                     delete completedSessions[sessionId];
-                    localStorage.setItem('yks_completed_sessions', JSON.stringify(completedSessions));
+                    await AppDB.saveSetting('completedSessions', completedSessions);
                     recalculateDaySchedule(d.day);
+                    await AppDB.saveActivePlan(activePlan);
+                    await AppDB.logActivity('SILME', `${d.day}. günden "${topicName}" oturumu kaldırıldı.`, `${d.day}. Gün`);
                     showToast(`"${topicName}" oturumu silindi.`, 'info', 'Oturum Kaldırıldı');
                     return;
                 }
@@ -1127,10 +1771,10 @@
         }
 
         // Theme Switcher Function
-        function setTheme(themeName) {
+        async function setTheme(themeName) {
             currentTheme = themeName;
             document.documentElement.setAttribute('data-theme', themeName);
-            localStorage.setItem('yks_theme', themeName);
+            await AppDB.saveSetting('theme', themeName);
 
             ['slate-dark', 'dark', 'paper', 'light'].forEach(t => {
                 const btn = document.getElementById('theme-' + t + '-btn');
@@ -1144,10 +1788,20 @@
             });
         }
 
+        async function toggleSessionComplete(sessionId) {
+            completedSessions[sessionId] = !completedSessions[sessionId];
+            await AppDB.saveSetting('completedSessions', completedSessions);
+            await AppDB.logActivity('OTURUM_DURUMU', `Oturum (${sessionId}) tamamlama durumu: ${completedSessions[sessionId] ? 'Tamamlandı' : 'Tamamlanmadı'}`, sessionId);
+            renderDaysTabBar();
+            renderActiveDay();
+            renderFullTable();
+            updateOverallProgress();
+        }
+
         // Initialize Application
-        function initApp() {
+        async function initApp() {
+            await AppDB.initData(MASTER_14_DAYS_DATA, CURRICULUM);
             setTheme(currentTheme);
-            activePlan = JSON.parse(JSON.stringify(MASTER_14_DAYS_DATA));
             applyCustomLinksToPlan(activePlan);
             
             const limitSel = document.getElementById('globalDailyLimitSelect');
@@ -1162,6 +1816,7 @@
             renderCurriculumLibrary();
             updateOverallProgress();
             generateAICoachInsights();
+            updateDbStatsBadge();
         }
 
         // LLM Settings UI Handlers
@@ -1525,7 +2180,7 @@
             document.getElementById('addCategoryModal').classList.add('hidden');
         }
 
-        function saveNewCategory() {
+        async function saveNewCategory() {
             const name = document.getElementById('newCategoryNameInput').value.trim();
             if (!name) {
                 showToast('Lütfen bir ders veya alan adı girin.', 'error', 'Eksik Bilgi');
@@ -1537,22 +2192,27 @@
                 isCustom: true,
                 topics: []
             };
-            saveCurriculumToStorage();
+            await AppDB.saveCurriculum(appCurriculum);
+            await AppDB.logActivity('MÜFREDAT_ALANI_EKLENDİ', `Yeni müfredat alanı "${name}" eklendi.`, name);
             closeAddCategoryModal();
             updateSubjectSelectOptions();
             renderCurriculumLibrary();
+            updateDbStatsBadge();
             showToast('"' + name + '" alanı başarıyla eklendi! Şimdi konular ekleyebilirsiniz.', 'success', 'Kategori Eklendi');
         }
 
-        function deleteCategory(key) {
+        async function deleteCategory(key) {
             const cat = appCurriculum[key];
             if (!cat) return;
             if (confirm('"' + cat.name + '" alanını ve içindeki tüm konuları silmek istediğinize emin misiniz?')) {
+                const catName = cat.name;
                 delete appCurriculum[key];
-                saveCurriculumToStorage();
+                await AppDB.saveCurriculum(appCurriculum);
+                await AppDB.logActivity('MÜFREDAT_ALANI_SİLİNDİ', `"${catName}" müfredat alanı silindi.`, catName);
                 updateSubjectSelectOptions();
                 renderCurriculumLibrary();
-                showToast('"' + cat.name + '" alanı silindi.', 'info', 'Kategori Silindi');
+                updateDbStatsBadge();
+                showToast('"' + catName + '" alanı silindi.', 'info', 'Kategori Silindi');
             }
         }
 
@@ -1599,7 +2259,7 @@
             }
         }
 
-        function saveTopic() {
+        async function saveTopic() {
             const subjectKey = document.getElementById('editTopicSubjectSelect').value;
             const name = document.getElementById('editTopicNameInput').value.trim();
             const url = document.getElementById('editTopicUrlInput').value.trim();
@@ -1627,7 +2287,7 @@
                 }
             }
 
-            saveCurriculumToStorage();
+            await AppDB.saveCurriculum(appCurriculum);
 
             // Update current active plan
             activePlan.forEach(d => {
@@ -1637,22 +2297,28 @@
                     }
                 });
             });
+            await AppDB.saveActivePlan(activePlan);
+            await AppDB.logActivity('KONU_KAYDEDİLDİ', `"${name}" konusu kaydedildi.`, appCurriculum[subjectKey] ? appCurriculum[subjectKey].name : subjectKey);
 
             closeEditTopicModal();
             renderCurriculumLibrary();
             renderActiveDay();
             renderFullTable();
+            updateDbStatsBadge();
             showToast('"' + name + '" konusu başarıyla kaydedildi!', 'success', 'Konu Kaydedildi');
         }
 
-        function deleteTopic(subjectKey, topicIndex) {
+        async function deleteTopic(subjectKey, topicIndex) {
             const sub = appCurriculum[subjectKey];
             if (!sub || !sub.topics || !sub.topics[topicIndex]) return;
             const topicName = sub.topics[topicIndex].name;
             if (confirm('"' + topicName + '" konusunu listeden silmek istediğinize emin misiniz?')) {
                 sub.topics.splice(topicIndex, 1);
-                saveCurriculumToStorage();
+                await AppDB.saveCurriculum(appCurriculum);
+                await AppDB.logActivity('KONU_SİLİNDİ', `"${topicName}" konusu listeden silindi.`, sub.name);
                 renderCurriculumLibrary();
+                updateDbStatsBadge();
+                showToast('"' + topicName + '" konusu silindi.', 'info', 'Konu Silindi');
             }
         }
 
@@ -1662,26 +2328,14 @@
             }
         }
 
-        function toggleSessionComplete(sessionId) {
-            if (completedSessions[sessionId]) {
-                delete completedSessions[sessionId];
-            } else {
-                completedSessions[sessionId] = true;
-            }
-            localStorage.setItem('yks_completed_sessions', JSON.stringify(completedSessions));
-            renderActiveDay();
-            renderDaysTabBar();
-            renderFullTable();
-            updateOverallProgress();
-        }
-
-        function markEntireDayComplete() {
+        async function markEntireDayComplete() {
             const dayData = activePlan.find(d => d.day === currentActiveDay);
             if (!dayData) return;
             dayData.sessions.forEach(s => {
                 completedSessions[s.id] = true;
             });
-            localStorage.setItem('yks_completed_sessions', JSON.stringify(completedSessions));
+            await AppDB.saveSetting('completedSessions', completedSessions);
+            await AppDB.logActivity('GÜN_TAMAMLANDI', `${currentActiveDay}. Günün tüm oturumları tamamlandı.`, `${currentActiveDay}. Gün`);
             renderActiveDay();
             renderDaysTabBar();
             renderFullTable();
@@ -2265,6 +2919,12 @@
                 recalculateDaySchedule(dayNum);
             });
             
+            await AppDB.saveActivePlan(activePlan);
+            let actionLogType = 'EKLEME';
+            if (act.action === 'remove') actionLogType = 'SILME';
+            else if (act.action === 'update') actionLogType = 'GUNCELLEME';
+            await AppDB.logActivity(actionLogType, `Doğal dil ile "${act.subject.name}" (${act.durationMinutes || 0} dk) uygulandı.`, `Gün(ler): ${targetDays.join(', ')}`);
+
             closePlanChangeConfirmModal();
             generateAICoachInsights();
             if (act.action === 'remove') {
@@ -2725,6 +3385,9 @@
                 showToast(`Planınız ${totalDays} günlük (${detectedSubjects.length} ders) olarak oluşturuldu!`, 'success', '✨ Plan Hazır');
             }
 
+            await AppDB.saveActivePlan(activePlan);
+            await AppDB.logActivity('YENI_PLAN', `${totalDays} Günlük yeni çalışma takvimi oluşturuldu (${detectedSubjects.length} ders).`, `Limit: ${globalDailyLimit} Saat`);
+
             renderDaysTabBar();
             renderActiveDay();
             renderFullTable();
@@ -2794,6 +3457,8 @@
                     currentActiveDay = 1;
                     document.getElementById('planTitle').innerText = '🤖 Yerel Yapay Zeka (' + llmConfig.model + ') Tarafından Üretilen Plan';
                     document.getElementById('planSubtitle').innerText = 'Toplam ' + parsed.length + ' Gün • Yapay zeka ile kişiselleştirildi';
+                    await AppDB.saveActivePlan(activePlan);
+                    await AppDB.logActivity('AI_PLAN', `Yerel LLM (${llmConfig.model}) ile ${parsed.length} günlük plan üretildi.`, `Model: ${llmConfig.model}`);
                     renderDaysTabBar();
                     renderActiveDay();
                     renderFullTable();
