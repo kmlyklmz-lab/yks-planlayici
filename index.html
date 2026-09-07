@@ -2483,17 +2483,19 @@
         }
 
         // Prompt Preset Handler
-        function applyPromptPreset(presetId) {
+        async function applyPromptPreset(presetId) {
             const promptInput = document.getElementById('userPromptInput');
             if (presetId === 1) {
                 promptInput.value = '14 günlük plan var. Dakka hesabı ile çalışma planı. 180 dk ayt mat. 60 dakka tyt ve 120 dk geometri olacak şekilde';
                 activePlan = JSON.parse(JSON.stringify(MASTER_14_DAYS_DATA));
                 applyCustomLinksToPlan(activePlan);
+                await AppDB.saveActivePlan(activePlan);
+                await AppDB.logActivity('PRESET_YUKLENDI', '14 Günlük (180 AYT + 120 Geo + 60 TYT) hazır şablon yüklendi.', '14 Gün');
                 document.getElementById('planTitle').innerText = '📌 14 Günlük AYT Matematik, Geometri ve TYT Matematik Programı';
                 document.getElementById('planSubtitle').innerText = 'Toplam 14 Gün • Günlük 360 dk (6 Saat) • 180 dk AYT Mat + 120 dk Geometri + 60 dk TYT Mat';
             } else if (presetId === 2) {
                 promptInput.value = 'günde 3 saat edebiyat ve 5 saat ayt matematik çalışacak şekilde günlük konu konu ders çalışma takvimi oluştur. Her konu için en az 2 saat çalışılacak. Her Konu ilk kez bitince tekrarı olacak. İkinci tekrardan sonra diğer konuya geçecek. Günün ders başlama saati 10, bitiş saati 22. Bu aralıkta 8 saat planlasın';
-                generatePlanFromGenericNLP(promptInput.value);
+                await generatePlanFromGenericNLP(promptInput.value);
             }
             currentActiveDay = 1;
             renderDaysTabBar();
@@ -2874,7 +2876,7 @@
             if (freshBtn) freshBtn.style.display = '';
         }
 
-        function applyPendingPlanChange() {
+        async function applyPendingPlanChange() {
             if (!pendingChangeAction) return;
             const act = pendingChangeAction;
             let totalAffected = 0;
@@ -2923,7 +2925,7 @@
             let actionLogType = 'EKLEME';
             if (act.action === 'remove') actionLogType = 'SILME';
             else if (act.action === 'update') actionLogType = 'GUNCELLEME';
-            await AppDB.logActivity(actionLogType, `Doğal dil ile "${act.subject.name}" (${act.durationMinutes || 0} dk) uygulandı.`, `Gün(ler): ${targetDays.join(', ')}`);
+            await AppDB.logActivity(actionLogType, `Doğal dil ile "${act.subject.name}" (${act.durationMinutes || 0} dk) uygulandı.`, `Gün(ler): ${act.targetDays.join(', ')}`);
 
             closePlanChangeConfirmModal();
             generateAICoachInsights();
@@ -2936,11 +2938,11 @@
             }
         }
 
-        function applyFreshPlanInstead() {
+        async function applyFreshPlanInstead() {
             if (!pendingChangeAction) return;
             const raw = pendingChangeAction.rawPrompt;
             closePlanChangeConfirmModal();
-            generatePlanFromGenericNLP(raw);
+            await generatePlanFromGenericNLP(raw);
         }
 
         // Ask General or QA question to Local LLM
@@ -3048,13 +3050,13 @@
             }
 
             // Fresh generation mode
-            generatePlanFromGenericNLP(rawPrompt);
+            await generatePlanFromGenericNLP(rawPrompt);
             if (btn) btn.innerHTML = origText;
             generateAICoachInsights();
         }
 
         // Generic NLP & Algorithmic Parser with Parametric Per-Day Limits
-        function generatePlanFromGenericNLP(promptText) {
+        async function generatePlanFromGenericNLP(promptText) {
             let p = promptText.toLowerCase();
 
             // 1. Normalize spaces between words and numbers (e.g. "matematik3" -> "matematik 3", "3saat" -> "3 saat", "180dk" -> "180 dk")
