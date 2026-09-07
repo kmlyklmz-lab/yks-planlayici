@@ -1,0 +1,2892 @@
+<!DOCTYPE html>
+<html lang="tr" data-theme="slate-dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YKS / AYT / TYT Akıllı Çalışma Planlayıcı</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#312e81' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        :root {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            --bg-main: #0b0f19;
+            --bg-panel: rgba(15, 23, 42, 0.75);
+            --bg-card: rgba(30, 41, 59, 0.6);
+            --bg-card-hover: rgba(30, 41, 59, 0.9);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-color: #6366f1;
+            --badge-new-bg: rgba(59, 130, 246, 0.2);
+            --badge-new-text: #93c5fd;
+            --badge-new-border: rgba(59, 130, 246, 0.3);
+            --badge-rep1-bg: rgba(245, 158, 11, 0.2);
+            --badge-rep1-text: #fcd34d;
+            --badge-rep1-border: rgba(245, 158, 11, 0.3);
+            --badge-rep2-bg: rgba(16, 185, 129, 0.2);
+            --badge-rep2-text: #6ee7b7;
+            --badge-rep2-border: rgba(16, 185, 129, 0.3);
+        }
+
+        [data-theme="dark"] {
+            --bg-main: #000000;
+            --bg-panel: rgba(18, 18, 18, 0.9);
+            --bg-card: rgba(28, 28, 28, 0.75);
+            --bg-card-hover: rgba(40, 40, 40, 0.95);
+            --border-color: rgba(255, 255, 255, 0.1);
+            --text-main: #ffffff;
+            --text-muted: #a1a1aa;
+            --accent-color: #818cf8;
+        }
+
+        [data-theme="slate-dark"] {
+            --bg-main: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.8);
+            --bg-card: rgba(15, 23, 42, 0.65);
+            --bg-card-hover: rgba(51, 65, 85, 0.8);
+            --border-color: rgba(148, 163, 184, 0.15);
+            --text-main: #f1f5f9;
+            --text-muted: #94a3b8;
+            --accent-color: #6366f1;
+        }
+
+        [data-theme="paper"] {
+            --bg-main: #fbf7ee;
+            --bg-panel: #f4ecdc;
+            --bg-card: #ffffff;
+            --bg-card-hover: #fffdf9;
+            --border-color: #e2d7be;
+            --text-main: #2d241e;
+            --text-muted: #7c6f64;
+            --accent-color: #b45309;
+            --badge-new-bg: #dbeafe;
+            --badge-new-text: #1e40af;
+            --badge-new-border: #bfdbfe;
+            --badge-rep1-bg: #fef3c7;
+            --badge-rep1-text: #92400e;
+            --badge-rep1-border: #fde68a;
+            --badge-rep2-bg: #d1fae5;
+            --badge-rep2-text: #065f46;
+            --badge-rep2-border: #a7f3d0;
+        }
+
+        [data-theme="light"] {
+            --bg-main: #f8fafc;
+            --bg-panel: #ffffff;
+            --bg-card: #ffffff;
+            --bg-card-hover: #f1f5f9;
+            --border-color: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --accent-color: #4f46e5;
+            --badge-new-bg: #eff6ff;
+            --badge-new-text: #1d4ed8;
+            --badge-new-border: #bfdbfe;
+            --badge-rep1-bg: #fffbeb;
+            --badge-rep1-text: #b45309;
+            --badge-rep1-border: #fde68a;
+            --badge-rep2-bg: #ecfdf5;
+            --badge-rep2-text: #047857;
+            --badge-rep2-border: #a7f3d0;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .theme-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+        }
+
+        .theme-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+        .theme-card:hover {
+            background: var(--bg-card-hover);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .stage-new {
+            background-color: var(--badge-new-bg);
+            color: var(--badge-new-text);
+            border: 1px solid var(--badge-new-border);
+        }
+        .stage-rep1 {
+            background-color: var(--badge-rep1-bg);
+            color: var(--badge-rep1-text);
+            border: 1px solid var(--badge-rep1-border);
+        }
+        .stage-rep2 {
+            background-color: var(--badge-rep2-bg);
+            color: var(--badge-rep2-text);
+            border: 1px solid var(--badge-rep2-border);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.4); border-radius: 999px; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header Navbar -->
+    <header class="border-b theme-panel sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-xl shadow-lg shadow-indigo-500/20 text-white">
+                    🎯
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold tracking-tight flex items-center gap-2">
+                        YKS Akıllı Ders Planlayıcı
+                        <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30">14 Günlük Takvim</span>
+                    </h1>
+                    <p class="text-xs" style="color: var(--text-muted)">180 dk AYT Mat + 120 dk Geometri + 60 dk TYT Mat</p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2 sm:gap-3">
+                <!-- Theme Switcher -->
+                <div class="flex items-center rounded-xl p-1 border" style="background: var(--bg-panel); border-color: var(--border-color)">
+                    <button onclick="setTheme('slate-dark')" id="theme-slate-dark-btn" title="Slate Dark (Mavi Koyu)" class="p-1.5 rounded-lg text-xs font-semibold transition-all">
+                        🌌
+                    </button>
+                    <button onclick="setTheme('dark')" id="theme-dark-btn" title="Dark (Gece)" class="p-1.5 rounded-lg text-xs font-semibold transition-all">
+                        🌙
+                    </button>
+                    <button onclick="setTheme('paper')" id="theme-paper-btn" title="Paper (Kitap / Sepya Kağıt)" class="p-1.5 rounded-lg text-xs font-semibold transition-all">
+                        📜
+                    </button>
+                    <button onclick="setTheme('light')" id="theme-light-btn" title="Light (Aydınlık)" class="p-1.5 rounded-lg text-xs font-semibold transition-all">
+                        ☀️
+                    </button>
+                </div>
+
+                <button onclick="exportToICS()" class="px-3 py-1.5 text-xs font-medium rounded-lg border theme-card flex items-center gap-1.5 transition-all">
+                    📅 <span class="hidden sm:inline">Takvime Aktar</span> (.ics)
+                </button>
+                <button onclick="window.print()" class="px-3 py-1.5 text-xs font-medium rounded-lg border theme-card flex items-center gap-1.5 transition-all">
+                    🖨️ <span class="hidden sm:inline">Yazdır</span>
+                </button>
+                <button onclick="toggleViewMode()" id="viewModeBtn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-500 border border-indigo-500/40 flex items-center gap-1.5 transition-all">
+                    📋 <span id="viewModeText">Tüm Günler Tablosu</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex-1 w-full space-y-6">
+
+        <!-- Natural Language / AI Prompt Bar -->
+        <section class="theme-panel p-5 rounded-2xl shadow-xl space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="p-1.5 rounded-lg bg-indigo-500/20 text-indigo-500 text-sm">✨</span>
+                    <div>
+                        <h2 class="text-sm font-bold">Doğal Dil ile Plan Oluştur / Soru Sor</h2>
+                        <p class="text-xs" style="color: var(--text-muted)">Sorunuzu veya çalışma isteğinizi yazın, kural motoru anında uygulasın.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap">
+                    <!-- Global Daily Limit Selector (1 to 24 Hours) -->
+                    <div class="flex items-center gap-1.5 px-3 py-1 rounded-full border theme-card text-xs shadow-sm">
+                        <span class="text-amber-500 font-bold">🎯 Günlük Maks. Sınır:</span>
+                        <select id="globalDailyLimitSelect" onchange="setGlobalDailyLimit(this.value)" class="bg-transparent font-bold focus:outline-none cursor-pointer" style="color: var(--text-main)">
+                            <option value="1">1 Saat</option>
+                            <option value="2">2 Saat</option>
+                            <option value="3">3 Saat</option>
+                            <option value="4">4 Saat</option>
+                            <option value="5">5 Saat</option>
+                            <option value="6">6 Saat</option>
+                            <option value="7">7 Saat</option>
+                            <option value="8">8 Saat</option>
+                            <option value="9">9 Saat</option>
+                            <option value="10" selected>10 Saat</option>
+                            <option value="11">11 Saat</option>
+                            <option value="12">12 Saat</option>
+                            <option value="13">13 Saat</option>
+                            <option value="14">14 Saat</option>
+                            <option value="15">15 Saat</option>
+                            <option value="16">16 Saat</option>
+                            <option value="17">17 Saat</option>
+                            <option value="18">18 Saat</option>
+                            <option value="19">19 Saat</option>
+                            <option value="20">20 Saat</option>
+                            <option value="21">21 Saat</option>
+                            <option value="22">22 Saat</option>
+                            <option value="23">23 Saat</option>
+                            <option value="24">24 Saat</option>
+                        </select>
+                    </div>
+                    <button onclick="openLLMSettings()" class="px-3 py-1 text-xs font-semibold rounded-full border theme-card flex items-center gap-1 hover:border-indigo-500 transition-all text-indigo-400">
+                        ⚙️ Yerel LLM (Ollama/LM Studio)
+                    </button>
+                    <button onclick="applyPromptPreset(1)" class="px-3 py-1 text-xs font-medium rounded-full bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-500 border border-indigo-500/30 transition-all">
+                        ⭐ 14 Günlük (180 AYT + 120 Geo + 60 TYT)
+                    </button>
+                    <button onclick="applyPromptPreset(2)" class="px-3 py-1 text-xs font-medium rounded-full border theme-card transition-all">
+                        📖 8 Saatlik (5s AYT Mat + 3s Edebiyat)
+                    </button>
+                </div>
+            </div>
+
+            <!-- NLP Action Mode Selector -->
+            <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 p-2.5 rounded-xl border" style="background: var(--bg-card); border-color: var(--border-color)">
+                <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-xs font-bold" style="color: var(--text-muted)">İşlem Modu:</span>
+                    <button type="button" id="btnModeActive" onclick="setNlpMode('active')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white shadow-md cursor-pointer">
+                        🎯 Aktif Takvimde Düzenle / Soru Sor (Bozmadan Ekle/Çıkar)
+                    </button>
+                    <button type="button" id="btnModeFresh" onclick="setNlpMode('fresh')" class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all opacity-60 hover:opacity-100 theme-card cursor-pointer">
+                        🔄 Sıfırdan Yeni Takvim Oluştur
+                    </button>
+                </div>
+                <span id="nlpModeDesc" class="text-[11px]" style="color: var(--text-muted)">Mevcut programı korur; sadece belirttiğiniz dersi ekler/çıkarır veya takvim hakkındaki sorularınızı yanıtlar.</span>
+            </div>
+
+            <div class="relative">
+                <textarea id="userPromptInput" rows="2" class="w-full rounded-xl p-3 text-xs sm:text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 border custom-scrollbar" style="background: var(--bg-card); border-color: var(--border-color); color: var(--text-main)" placeholder="Örn: 3. güne 1 saat geometri ekle VEYA bugün toplam kaç saat ders var? VEYA 14 günlük plan yap"></textarea>
+                <div class="flex justify-between items-center mt-2 flex-wrap gap-2">
+                    <div class="text-xs flex items-center gap-1.5" style="color: var(--text-muted)">
+                        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span id="nlpStatusHint">Aktif Takvimi Koruma Modu Açık (Doğal dil ile anında ekle/çıkar)</span>
+                    </div>
+                    <button onclick="parseAndGenerateFromPrompt()" id="submitPromptBtn" class="px-5 py-2 text-xs sm:text-sm font-bold rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white shadow-lg shadow-indigo-600/20 flex items-center gap-2 transition-all cursor-pointer">
+                        🚀 İsteği İşle ve Uygula
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Smart AI Optimization / 24h Limit Alert Banner -->
+        <div id="aiSuggestionBanner" class="hidden p-4 sm:p-5 rounded-2xl border shadow-xl transition-all duration-300 theme-panel" style="border-color: rgba(245, 158, 11, 0.45); background: var(--bg-panel)">
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-start gap-3.5 flex-1">
+                    <div class="p-2.5 rounded-xl bg-amber-500/20 text-amber-500 text-xl shrink-0 flex items-center justify-center font-bold">
+                        ⚡
+                    </div>
+                    <div class="space-y-2 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <h3 class="font-bold text-sm sm:text-base text-amber-500 flex items-center gap-1.5" id="aiSuggestionHeading">
+                                24 Saat Sınırı & Akıllı Süre Optimizasyonu
+                            </h3>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-500 border border-amber-500/30">Orantısal Dengeleme</span>
+                        </div>
+                        <p id="aiSuggestionText" class="text-xs sm:text-sm leading-relaxed" style="color: var(--text-main)"></p>
+                        <div id="aiSuggestionPills" class="flex flex-wrap gap-2 pt-1.5"></div>
+                    </div>
+                </div>
+                <button onclick="dismissSuggestionBanner()" class="p-1.5 rounded-xl hover:bg-white/10 text-xl font-bold transition-all cursor-pointer" style="color: var(--text-muted)" title="Kapat">
+                    &times;
+                </button>
+            </div>
+        </div>
+
+        <!-- Current Plan Header Banner -->
+        <div id="activePlanBanner" class="theme-panel p-4 rounded-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-l-4 border-indigo-500">
+            <div>
+                <h3 id="planTitle" class="text-base font-bold flex items-center gap-2">
+                    📌 14 Günlük AYT Matematik, Geometri ve TYT Matematik Programı
+                </h3>
+                <p id="planSubtitle" class="text-xs mt-0.5" style="color: var(--text-muted)">
+                    Toplam 14 Gün • Günlük 360 dk (6 Saat) • 180 dk AYT Mat + 120 dk Geometri + 60 dk TYT Mat • 10:00 - 17:30
+                </p>
+            </div>
+            <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                <div class="text-right">
+                    <div class="text-xs" style="color: var(--text-muted)">Tamamlanma</div>
+                    <div id="overallProgressText" class="text-sm font-bold text-emerald-500">%0 (0/42 Blok)</div>
+                </div>
+                <div class="w-16 h-2 rounded-full overflow-hidden" style="background: var(--border-color)">
+                    <div id="overallProgressBar" class="bg-emerald-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Study Coach & Smart Recommendations Section -->
+        <section id="aiCoachSection" class="theme-panel p-5 rounded-2xl shadow-xl space-y-4 border-l-4 border-purple-500">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b" style="border-color: var(--border-color)">
+                <div class="flex items-center gap-2.5">
+                    <span class="p-2 rounded-xl bg-purple-500/20 text-purple-400 text-lg font-bold">🧠</span>
+                    <div>
+                        <h3 class="text-sm sm:text-base font-bold flex items-center gap-2">
+                            Yapay Zeka Çalışma Koçu & Akıllı Tavsiyeler
+                            <span class="text-[10px] px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/30">Dinamik Analiz</span>
+                        </h3>
+                        <p class="text-xs" style="color: var(--text-muted)">Aktif çalışma takviminizdeki ders dağılımı, tekrar döngüsü ve parametrelere göre anlık tavsiyeler.</p>
+                    </div>
+                </div>
+                <button onclick="generateAICoachInsights()" class="px-3.5 py-1.5 rounded-xl border theme-card hover:border-purple-500 text-xs font-semibold flex items-center gap-1.5 transition-all text-purple-400 cursor-pointer">
+                    🔄 Tavsiyeleri Güncelle
+                </button>
+            </div>
+
+            <!-- 3 Dynamic Insight Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs" id="aiCoachCardsGrid">
+                <!-- Card 1: Günlük Odak & Taktik -->
+                <div class="p-4 rounded-xl border space-y-2.5" style="background: var(--bg-card); border-color: var(--border-color)">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold flex items-center gap-1.5 text-indigo-400">
+                            <span>💡</span> Günlük Odak & Taktik
+                        </span>
+                        <span id="aiCoachDayBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-400 font-bold">1. Gün</span>
+                    </div>
+                    <p id="aiCoachDailyAdvice" class="leading-relaxed" style="color: var(--text-main)">
+                        Yükleniyor...
+                    </p>
+                </div>
+
+                <!-- Card 2: Haftalık Denge & Sınav Uyumu -->
+                <div class="p-4 rounded-xl border space-y-2.5" style="background: var(--bg-card); border-color: var(--border-color)">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold flex items-center gap-1.5 text-emerald-400">
+                            <span>📊</span> Haftalık & Ders Dağılımı
+                        </span>
+                        <span class="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold">Denge Analizi</span>
+                    </div>
+                    <p id="aiCoachWeeklyAdvice" class="leading-relaxed" style="color: var(--text-main)">
+                        Yükleniyor...
+                    </p>
+                </div>
+
+                <!-- Card 3: Tekrar & Bilişsel Yük -->
+                <div class="p-4 rounded-xl border space-y-2.5" style="background: var(--bg-card); border-color: var(--border-color)">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold flex items-center gap-1.5 text-amber-400">
+                            <span>⚡</span> Tekrar & Bilişsel Yük
+                        </span>
+                        <span id="aiCoachLoadBadge" class="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-bold">Optimal</span>
+                    </div>
+                    <p id="aiCoachRetentionAdvice" class="leading-relaxed" style="color: var(--text-main)">
+                        Yükleniyor...
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 14 Days Navigation Tab Bar -->
+        <div class="flex items-center gap-2 overflow-x-auto pb-2 pt-1 custom-scrollbar" id="daysTabBar">
+            <!-- Dynamic Day Buttons -->
+        </div>
+
+        <!-- Single Day Cards Container -->
+        <div id="singleDayContainer" class="space-y-4">
+            <!-- Day Header Card -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between theme-panel p-4 rounded-xl gap-3">
+                <div class="flex items-center gap-3">
+                    <span id="activeDayBadge" class="px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold text-sm">1. GÜN</span>
+                    <div>
+                        <h4 id="activeDayTitle" class="text-sm font-bold">1. Gün Çalışma Planı</h4>
+                        <p id="activeDayTimeRange" class="text-xs" style="color: var(--text-muted)">Çalışma Saatleri: 10:00 - 17:30 • Toplam 360 dk (6 Saat)</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 flex-wrap justify-end">
+                    <!-- Add Session Button -->
+                    <button onclick="openAddSessionModal(currentActiveDay)" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1 transition-all shadow-md shadow-indigo-600/20">
+                        ➕ <span class="hidden sm:inline">Bu Güne</span> Oturum Ekle
+                    </button>
+
+                    <!-- Complete Day Button -->
+                    <button onclick="markEntireDayComplete()" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-500 border border-emerald-500/30 transition-all flex items-center gap-1">
+                        ✓ <span class="hidden sm:inline">Günün Hepsini</span> Tamamla
+                    </button>
+                </div>
+            </div>
+
+            <!-- Subject Cards Grid (SADECE KONU ADI GÖRÜNÜR) -->
+            <div id="topicCardsList" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Dynamic Topic Cards -->
+            </div>
+        </div>
+
+        <!-- Full Table View (Initially Hidden) -->
+        <div id="fullTableViewContainer" class="hidden theme-panel p-6 rounded-2xl shadow-xl overflow-x-auto custom-scrollbar">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-base font-bold flex items-center gap-2">
+                    📋 14 Günlük Detaylı Genel Bakış Tablosu
+                </h3>
+                <span class="text-xs" style="color: var(--text-muted)">Tüm 14 günün dakika ve konu dağılımı.</span>
+            </div>
+            <table class="w-full text-left text-xs border-collapse">
+                <thead>
+                    <tr class="border-b" style="border-color: var(--border-color); background: var(--bg-card)">
+                        <th class="p-3 rounded-l-lg">Gün</th>
+                        <th class="p-3">AYT Matematik (180 dk)</th>
+                        <th class="p-3">Geometri (120 dk)</th>
+                        <th class="p-3">TYT Matematik (60 dk)</th>
+                        <th class="p-3 rounded-r-lg text-right">Durum</th>
+                    </tr>
+                </thead>
+                <tbody id="fullTableBody" class="divide-y" style="border-color: var(--border-color)">
+                    <!-- Dynamic Table Rows -->
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Video & Curriculum Library Reference Accordion -->
+        <div class="theme-panel p-5 rounded-2xl shadow-lg space-y-3">
+            <div class="flex items-center justify-between cursor-pointer" onclick="toggleCurriculumView()">
+                <div class="flex items-center gap-2">
+                    <span class="text-indigo-500">📚</span>
+                    <h3 class="text-sm font-bold">Tüm Müfredat ve Video Kütüphanesi</h3>
+                    <span id="curriculumTopicCountBadge" class="text-xs px-2 py-0.5 rounded-full border theme-card" style="color: var(--text-muted)">40+ Konu</span>
+                </div>
+                <span id="curriculumChevron" class="text-sm transition-transform" style="color: var(--text-muted)">▼</span>
+            </div>
+            <div id="curriculumContent" class="hidden pt-3 border-t space-y-3" style="border-color: var(--border-color)">
+                <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b" style="border-color: var(--border-color)">
+                    <p class="text-xs" style="color: var(--text-muted)">
+                        Müfredata yeni sınav/ders alanları (örn: KPSS, Lise Tarih, DGS vb.) ekleyebilir, konuları linkli veya linksiz kaydedebilir ve tek tek silebilirsiniz.
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <button onclick="openAddCategoryModal()" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-purple-600 hover:bg-purple-500 text-white flex items-center gap-1 transition-all shadow-md shadow-purple-600/20">
+                            ➕ Yeni Ders / Alan Ekle
+                        </button>
+                        <button onclick="openEditTopicModal('', '', '')" class="px-3 py-1.5 text-xs font-semibold rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white flex items-center gap-1 transition-all shadow-md shadow-indigo-600/20">
+                            📝 Yeni Konu Ekle
+                        </button>
+                    </div>
+                </div>
+                <div id="curriculumGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Dynamic curriculum list populated by JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Add New Subject / Category Modal -->
+        <div id="addCategoryModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+            <div class="theme-panel p-6 rounded-2xl max-w-sm w-full border border-purple-500/30 space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📁</span>
+                        <h4 class="text-base font-bold">Yeni Ders / Sınav Alanı Ekle</h4>
+                    </div>
+                    <button onclick="closeAddCategoryModal()" class="text-xl" style="color: var(--text-muted)">&times;</button>
+                </div>
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-muted)">Alan / Ders Adı</label>
+                        <input type="text" id="newCategoryNameInput" placeholder="örn: KPSS Genel Yetenek, Lise Biyoloji, DGS, vb." class="w-full p-2.5 rounded-xl border theme-card font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                    </div>
+                    <p class="text-[11px] leading-relaxed" style="color: var(--text-muted)">
+                        Oluşturulan yeni ders alanına dilediğiniz gibi konular ekleyebilir ve doğal dille program hazırlarken kullanabilirsiniz.
+                    </p>
+                </div>
+                <div class="flex justify-end gap-2 pt-3 border-t" style="border-color: var(--border-color)">
+                    <button onclick="closeAddCategoryModal()" class="px-4 py-2 rounded-xl border theme-card text-xs font-bold">
+                        İptal
+                    </button>
+                    <button onclick="saveNewCategory()" class="px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold shadow-lg shadow-purple-600/20">
+                        💾 Alanı Oluştur
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add / Edit Topic Modal -->
+        <div id="editTopicModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+            <div class="theme-panel p-6 rounded-2xl max-w-md w-full border border-indigo-500/30 space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">📝</span>
+                        <h4 class="text-base font-bold" id="editTopicModalTitle">Konu Ekle / Düzenle</h4>
+                    </div>
+                    <button onclick="closeEditTopicModal()" class="text-xl" style="color: var(--text-muted)">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-muted)">Ders / Sınav Alanı</label>
+                        <select id="editTopicSubjectSelect" class="w-full p-2.5 rounded-xl border theme-card font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                            <!-- Populated dynamically from appCurriculum -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-main)">Konu Başlığı <span class="text-rose-500">*</span></label>
+                        <input type="text" id="editTopicNameInput" placeholder="örn: Fonksiyon Temel, KPSS Anayasa 1982" class="w-full p-2.5 rounded-xl border theme-card font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="font-semibold" style="color: var(--text-muted)">YouTube Video / Ders Linki</label>
+                            <span class="text-[10px] text-emerald-400 font-medium">(İsteğe Bağlı / Opsiyonel)</span>
+                        </div>
+                        <input type="url" id="editTopicUrlInput" placeholder="https://youtu.be/... (Boş bırakabilirsiniz)" class="w-full p-2.5 rounded-xl border theme-card font-mono text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                        <p class="text-[11px] mt-1" style="color: var(--text-muted)">Link girmeden sadece konu başlığıyla da kayıt yapabilirsiniz.</p>
+                    </div>
+
+                    <div class="flex items-center justify-between gap-2 pt-1" id="testLinkContainer">
+                        <button onclick="testLinkInModal()" type="button" class="px-3 py-1.5 rounded-xl border theme-card text-xs font-semibold flex items-center gap-1 hover:border-indigo-500">
+                            <span>▶️</span> Linki Test Et
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-3 border-t" style="border-color: var(--border-color)">
+                    <button onclick="closeEditTopicModal()" class="px-4 py-2 rounded-xl border theme-card text-xs font-bold">
+                        İptal
+                    </button>
+                    <button onclick="saveTopic()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/20">
+                        💾 Konuyu Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Local LLM Settings Modal -->
+        <div id="llmSettingsModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+            <div class="theme-panel p-6 rounded-2xl max-w-md w-full border border-indigo-500/30 space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">🧠</span>
+                        <h4 class="text-base font-bold">Yerel LLM (Yapay Zeka) Ayarları</h4>
+                    </div>
+                    <button onclick="closeLLMSettings()" class="text-xl" style="color: var(--text-muted)">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-muted)">Yerel AI Sağlayıcı / API Tipi</label>
+                        <select id="llmProviderSelect" onchange="updateLLMDefaults()" class="w-full p-2.5 rounded-xl border theme-card font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                            <option value="ollama">Ollama (http://localhost:11434/api/generate)</option>
+                            <option value="lmstudio">LM Studio / LocalAI (http://localhost:1234/v1/chat/completions)</option>
+                            <option value="custom">Özel OpenAI Uyumlu Endpoint</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-muted)">Endpoint URL</label>
+                        <input type="text" id="llmEndpointInput" value="http://localhost:11434/api/generate" class="w-full p-2.5 rounded-xl border theme-card font-mono text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-muted)">Model Adı</label>
+                        <input type="text" id="llmModelInput" value="qwen2.5:latest" placeholder="örn: qwen2.5, llama3, mistral, deepseek-r1" class="w-full p-2.5 rounded-xl border theme-card font-mono text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                    </div>
+
+                    <div class="p-3 rounded-xl border flex items-center justify-between" style="background: var(--bg-card); border-color: var(--border-color)">
+                        <div>
+                            <div class="font-bold">Yerel LLM'i Aktif Et</div>
+                            <div class="text-[11px]" style="color: var(--text-muted)">Kapalıyken anında çalışan yerel kural motoru devrededir</div>
+                        </div>
+                        <input type="checkbox" id="llmActiveToggle" onchange="saveLLMSettings()" class="w-5 h-5 text-indigo-600 rounded cursor-pointer">
+                    </div>
+
+                    <div id="llmConnectionStatus" class="p-2.5 rounded-xl text-[11px] font-semibold flex items-center gap-2 border bg-slate-500/10" style="border-color: var(--border-color)">
+                        <span>⚪ Durum: Test edilmedi</span>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-2 border-t" style="border-color: var(--border-color)">
+                    <button onclick="testLLMConnection()" class="px-4 py-2 rounded-xl border theme-card text-xs font-bold transition-all">
+                        ⚡ Bağlantıyı Test Et
+                    </button>
+                    <button onclick="saveAndCloseLLMSettings()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all">
+                        Kaydet ve Kapat
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add / Edit Session Modal -->
+        <div id="editSessionModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+            <div class="theme-panel p-6 rounded-2xl max-w-md w-full border border-indigo-500/30 space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">⏱️</span>
+                        <h4 class="text-base font-bold" id="editSessionModalTitle">Ders / Oturum Düzenle</h4>
+                    </div>
+                    <button onclick="closeEditSessionModal()" class="text-xl" style="color: var(--text-muted)">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <input type="hidden" id="editSessionId">
+                    <input type="hidden" id="editSessionDay">
+
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-muted)">Hangi Gün?</label>
+                        <select id="editSessionDaySelect" class="w-full p-2.5 rounded-xl border theme-card font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-main)">Ders / Konu Başlığı <span class="text-rose-500">*</span></label>
+                        <div class="space-y-1.5">
+                            <select id="editSessionPresetTopicSelect" onchange="onSessionPresetTopicChange(this.value)" class="w-full p-2 rounded-xl border theme-card font-medium focus:outline-none" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                                <option value="">-- Müfredattan Seçin veya Aşağıya Yazın --</option>
+                            </select>
+                            <input type="text" id="editSessionTopicInput" placeholder="örn: Fonksiyonlar, KPSS Tarih, Paragraf" class="w-full p-2.5 rounded-xl border theme-card font-semibold focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block font-semibold mb-1" style="color: var(--text-muted)">Çalışma Süresi (Dakika)</label>
+                            <input type="number" id="editSessionDurationInput" min="15" max="720" step="5" value="60" class="w-full p-2.5 rounded-xl border theme-card font-bold focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                        </div>
+                        <div>
+                            <label class="block font-semibold mb-1" style="color: var(--text-muted)">Aşama / Durum</label>
+                            <select id="editSessionStageSelect" class="w-full p-2.5 rounded-xl border theme-card font-medium focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                                <option value="Yeni Konu">Yeni Konu</option>
+                                <option value="1. Tekrar">1. Tekrar</option>
+                                <option value="2. Tekrar">2. Tekrar</option>
+                                <option value="Soru Çözümü">Soru Çözümü</option>
+                                <option value="Deneme / Test">Deneme / Test</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold mb-1" style="color: var(--text-muted)">Video / Ders URL (Opsiyonel)</label>
+                        <input type="url" id="editSessionUrlInput" placeholder="https://youtu.be/... (Boş kalabilir)" class="w-full p-2.5 rounded-xl border theme-card font-mono text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t" style="border-color: var(--border-color)">
+                    <button type="button" id="deleteSessionBtn" onclick="deleteSessionFromModal()" class="px-3 py-2 rounded-xl bg-rose-600/20 hover:bg-rose-600/30 text-rose-500 border border-rose-500/30 text-xs font-bold transition-all">
+                        🗑️ Oturumu Sil
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="closeEditSessionModal()" class="px-4 py-2 rounded-xl border theme-card text-xs font-bold">
+                            İptal
+                        </button>
+                        <button onclick="saveSessionModal()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/20">
+                            💾 Kaydet
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Plan NLP Modification Confirmation Modal -->
+        <div id="planChangeConfirmModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+            <div class="theme-panel p-6 rounded-2xl max-w-lg w-full border border-amber-500/40 space-y-4 shadow-2xl">
+                <div class="flex justify-between items-center border-b pb-3" style="border-color: var(--border-color)">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xl">⚡</span>
+                        <h4 class="text-base font-bold text-amber-500">Aktif Program Güncellensin mi?</h4>
+                    </div>
+                    <button onclick="closePlanChangeConfirmModal()" class="text-xl" style="color: var(--text-muted)">&times;</button>
+                </div>
+
+                <div class="space-y-3 text-xs">
+                    <p class="leading-relaxed" style="color: var(--text-main)">
+                        Girdiğiniz doğal dil isteği doğrultusunda <strong>mevcut aktif çalışma takviminiz üzerinde</strong> şu değişiklikler yapılacak:
+                    </p>
+
+                    <div id="planChangePreviewContainer" class="p-3.5 rounded-xl border space-y-2" style="background: var(--bg-card); border-color: var(--border-color)">
+                        <!-- Dynamic Diff Badges populated by JS -->
+                    </div>
+
+                    <p class="text-[11px]" style="color: var(--text-muted)">
+                        💡 İsterseniz bu değişiklikleri mevcut programınıza uygulayabilir, ya da tüm takvimi sıfırdan yeniden oluşturabilirsiniz.
+                    </p>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-end gap-2 pt-3 border-t" style="border-color: var(--border-color)">
+                    <button onclick="closePlanChangeConfirmModal()" class="px-3 py-2 rounded-xl border theme-card text-xs font-semibold">
+                        İptal
+                    </button>
+                    <button onclick="applyFreshPlanInstead()" class="px-4 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-400 border border-purple-500/30 text-xs font-bold transition-all">
+                        🔄 Sıfırdan Yeni Plan Yap
+                    </button>
+                    <button onclick="applyPendingPlanChange()" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all flex items-center justify-center gap-1.5">
+                        ✅ Evet, Aktif Programa Uygula
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Pomodoro Focus Modal -->
+    <div id="pomodoroModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="theme-panel p-6 rounded-2xl max-w-sm w-full border border-indigo-500/30 text-center space-y-4 shadow-2xl">
+            <div class="flex justify-between items-center">
+                <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-indigo-500/20 text-indigo-500" id="pomodoroTopicLabel">Konu</span>
+                <button onclick="closePomodoro()" class="text-xl" style="color: var(--text-muted)">&times;</button>
+            </div>
+            <div>
+                <h4 id="pomodoroHeading" class="text-xl font-bold mb-1">Odaklanma Sayacı</h4>
+                <p class="text-xs" id="pomodoroStageLabel" style="color: var(--text-muted)">Çalışma Oturumu</p>
+            </div>
+            <div class="text-5xl font-extrabold text-indigo-500 tracking-wider font-mono py-4" id="pomodoroDisplay">
+                60:00
+            </div>
+            <div class="flex justify-center gap-3">
+                <button onclick="startPomodoro()" id="pomodoroStartBtn" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all">
+                    Başlat
+                </button>
+                <button onclick="pausePomodoro()" class="px-4 py-2 rounded-xl border theme-card text-xs font-bold transition-all">
+                    Duraklat
+                </button>
+                <button onclick="resetPomodoro()" class="px-4 py-2 rounded-xl border theme-card text-xs font-bold transition-all" style="color: var(--text-muted)">
+                    Sıfırla
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2.5 max-w-sm w-full pointer-events-none px-4 sm:px-0"></div>
+
+    <!-- Footer -->
+    <footer class="border-t py-4 text-center text-xs theme-panel" style="border-color: var(--border-color); color: var(--text-muted)">
+        YKS Akıllı Ders Çalışma Takvimi & Aralıklı Tekrar Sistemi • Netlify Uyumlu • Yerel LLM & Generic NLP Destekli
+    </footer>
+
+    <!-- App JavaScript Logic -->
+    <script>
+        const CURRICULUM = {"ayt_matematik": {"name": "AYT Matematik", "color": "#3B82F6", "topics": [{"name": "Fonksiyon Temel", "video_url": "https://youtu.be/DW5ppxQf00A?si=wYsCCxo0TXNevVFm"}, {"name": "Fonksiyon İleri", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEJ5eej9hac_wZpf8N1La7o&si=Z2nmKekzR6ZZn-HP"}, {"name": "Fonksiyonlar", "video_url": "https://youtu.be/BSQNXHdfhcA?si=ZPXKgH0nPQvBaUVb"}, {"name": "II. Dereceden Denklemler", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DHKH65_KsxdeS4rYFhECWmJ&si=oaPgbhTT1L6cz94B"}, {"name": "Parabol", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DF9CJypFlv8a3k6u8uvPwhG&si=_s5VFjtD28sOYJ92"}, {"name": "II. Dereceden Eşitsizlikler", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFxMgxZdkzkACrKte5OsZ04&si=VeW3Zbh2vHJ3ZBMD"}, {"name": "Polinomlar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DGIwsdGz7IGczZ_sqCrY2ji&si=xhYpm7sjA7KdGx3l"}, {"name": "Logaritma", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFQIOZBsVIMNazJi1El4EAt&si=9gupzn3YU1P4ILYT"}, {"name": "Diziler", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFAa2innYnpz5rtlfTsWlkc&si=hCdjNOeixL39uhLu"}, {"name": "Aritmetik & Geometrik Dizi", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEyufm15_WplV3kPWFDQxaJ&si=VRLNWXWDaz6IklEA"}, {"name": "Trigonometri (Bölüm 1-2)", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEX-kTQmgkTV2ODkR83C2B_&si=K-TDC53DaIHJNxor"}, {"name": "Trigonometri (Bölüm 3-5)", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEMC3kyR9a3a-2jRWXc4i7b&si=TlCm0Ivwy8HqBWlx"}, {"name": "Limit", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DF7kXwc4OY4lmolp0sApt1I&si=F-guE5kvU9dFZolm"}, {"name": "Türev", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFtVs38okGaEIAvrkSWw6Sg&si=weXrn1GqFn8u6XVS"}, {"name": "İntegral", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DF8H9lkW7oZFCyliqHvyTsK&si=gnGKm_wSxEy2Pnhi"}]}, "geometri": {"name": "Geometri", "color": "#F59E0B", "topics": [{"name": "Nokta Analitiği", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DE0IMFIRICTf5bSpDd6sc6F&si=2KXPTja9Td5rtABA"}, {"name": "Doğru Analitiği", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEWqN9dTLT7azGNtNudFe-i&si=RbiWfjNlrGxH67Mn"}, {"name": "Dönüşümler Analitiği", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEHJ22x3V89FmJnHb1Rj9Sc&si=ieUge4nisYK-grLR"}, {"name": "Açılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DG4Xfr-5MpJS9nH-Zzy5JeA&si=GBxYEnur5qMjsmnw"}, {"name": "Özel Üçgenler", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEmMGCfpCZlujan6oNkq1Vs&si=rWwBfrwgslNjK6ol"}, {"name": "Kenarortay", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DHB1R5TdF0PJJdxw2eH09Si&si=j8E3SbGh6mO8aqFm"}, {"name": "Açıortay", "video_url": "https://youtube.com/playlist?list=PLYXQFWO_iE9I&si=f0JYUhkUmFRfSfWc"}, {"name": "Benzerlik", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFnoXZ50Gvp9TSwNvQt7BiN&si=zcuZw6KmLB1FV1Mr"}, {"name": "Üçgende Alan", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFBYI1IyVSq5x85ZmuUBVXR&si=IdIVZ6fHzPH94URP"}]}, "tyt_matematik": {"name": "TYT Matematik", "color": "#10B981", "topics": [{"name": "Tam Sayılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DG9G2oY2E7nu3-gJJctVefJ&si=UduxpfONNrbg2hqJ"}, {"name": "Ardışık Sayılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEy7_-jgguWMgInbcAOUen-&si=nWRTB5kyiJGseJ8w"}, {"name": "Tek Çift Sayılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DHro-oP4t1TvwW5UDYlktV3&si=6Vn9faBEnOT7hhpy"}, {"name": "Basamak Kavramı", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEdSGNszu48oPh71JluU9DV&si=fOLFv3ryL6Ncb2NZ"}, {"name": "Bölünebilme Kuralları", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFv_G_lfwujqNvszbh6YHAL&si=FQ8n1ve_nQLj5iIH"}, {"name": "Asal Sayılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEpIkVEyj3Jug56vwCAQRq1&si=7BNBNnIM7UKeUms"}, {"name": "Pozitif Bölen Sayısı", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEgQsFEMIQHy36zart8l-h9&si=0I1xyj3WwVrvH6ZU"}, {"name": "Faktöriyel", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DG_j5oRTImoUp8owaKYXQEq&si=VHRB5JkiQMOZFAqk"}, {"name": "EBOB - EKOK", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFHyTXBqXx181tN2bF6XGNPr&si=xCI8C2qnMRJM4vjG"}, {"name": "Rasyonel Sayılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DEo4lt-ulqw79o6mXcmt5Qf&si=sEekelfdTZTZhwsN"}, {"name": "I. Dereceden Eşitsizlikler", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFjfTCqQuE51Mk7LCsLwKZM&si=u3AnQ-0PjYwQAPmP"}, {"name": "Üslü Sayılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DHGghEY3OK1kswc59R5mgCe&si=jRqyyts1H6x7SeP3i"}, {"name": "Köklü Sayılar", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFxiK1CEzdOPupYRQkGSopo&si=2BRibKks6Vcc2Kqi"}, {"name": "Çarpanlara Ayırma", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFDgXWrT3HRQO7nhk8l6Y-0&si=IPr0iMUa0WJKOmjs"}, {"name": "Mutlak Değer", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFxiK1CEzdOPupYRQkGSopo&si=Hs83yxcz8h9AW_cC"}, {"name": "Oran Orantı", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFoJEQTPhb7gohkFXFXgy78&si=qHjN6jJ_LzcsmrNP"}, {"name": "Kümeler", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DFIdcbHZG1xHEZQ6FWMaCpq&si=WKYRWSc7cmmiM5Y8"}, {"name": "Mantık", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DF-eJU8GTjZv-Tgrtzw0Vhb&si=MG2Aav5MNXmndc9q"}, {"name": "Sayma & Binom Açılımı", "video_url": "https://youtube.com/playlist?list=PLfGn_uAf44DF-y7mCbLzTsRk4-epTYn7_&si=xHmZ0kp22LAL-trC"}, {"name": "Fonksiyonlar", "video_url": "https://youtu.be/BSQNXHdfhcA?si=ZPXKgH0nPQvBaUVb"}]}, "edebiyat": {"name": "Edebiyat", "color": "#EC4899", "topics": [{"name": "Öğretici Metinler", "video_url": "https://youtube.com/results?search_query=ogretici+metinler+edebiyat"}, {"name": "Şiir Bilgisi & Nazım Türleri", "video_url": "https://youtube.com/results?search_query=siir+bilgisi+edebiyat"}, {"name": "İslamiyet Öncesi ve İslami Dönem Türk Şiiri", "video_url": "https://youtube.com/results?search_query=islamiyet+oncesi+turk+siiri"}, {"name": "Divan Edebiyatı", "video_url": "https://youtube.com/results?search_query=divan+edebiyati"}, {"name": "Halk Edebiyatı", "video_url": "https://youtube.com/results?search_query=halk+edebiyati"}, {"name": "Tanzimat Edebiyatı", "video_url": "https://youtube.com/results?search_query=tanzimat+edebiyati"}, {"name": "Servet-i Fünun & Fecr-i Ati", "video_url": "https://youtube.com/results?search_query=servetifunun+edebiyati"}, {"name": "Milli Edebiyat Dönemi", "video_url": "https://youtube.com/results?search_query=milli+edebiyat+donemi"}, {"name": "Cumhuriyet Dönemi Şiir & Roman", "video_url": "https://youtube.com/results?search_query=cumhuriyet+donemi+edebiyat"}, {"name": "Edebi Akımlar", "video_url": "https://youtube.com/results?search_query=edebi+akimlar"}]}, "fizik": {"name": "Fizik", "color": "#8B5CF6", "topics": [{"name": "Vektörler & Kuvvet Denge", "video_url": "https://youtube.com/results?search_query=vektorler+fizik+ayt"}, {"name": "Tork ve Denge", "video_url": "https://youtube.com/results?search_query=tork+denge+fizik"}, {"name": "Kütle Merkezi & Basit Makineler", "video_url": "https://youtube.com/results?search_query=basit+makineler+fizik"}, {"name": "Bir Boyutta Sabit İvmeli Hareket", "video_url": "https://youtube.com/results?search_query=ivmeli+hareket+fizik"}, {"name": "İki Boyutta Hareket (Atışlar)", "video_url": "https://youtube.com/results?search_query=atislar+fizik"}, {"name": "İş Güç Enerji", "video_url": "https://youtube.com/results?search_query=is+guc+enerji+fizik"}, {"name": "İtme ve Çizgisel Momentum", "video_url": "https://youtube.com/results?search_query=itme+momentum+fizik"}, {"name": "Elektrostatik & Elektriksel Kuvvet", "video_url": "https://youtube.com/results?search_query=elektrostatik+fizik"}, {"name": "Manyetizma ve Elektromanyetik İndüksiyon", "video_url": "https://youtube.com/results?search_query=manyetizma+fizik"}, {"name": "Düzgün Çembersel Hareket", "video_url": "https://youtube.com/results?search_query=cembersel+hareket+fizik"}, {"name": "Basit Harmonik Hareket", "video_url": "https://youtube.com/results?search_query=harmonik+hareket+fizik"}, {"name": "Dalga Mekaniği & Modern Fizik", "video_url": "https://youtube.com/results?search_query=dalga+mekanigi+fizik"}]}, "kimya": {"name": "Kimya", "color": "#06B6D4", "topics": [{"name": "Kimyasal Türler Arası Etkileşimler", "video_url": "https://youtube.com/results?search_query=kimyasal+turler+kimya"}, {"name": "Mol Kavramı ve Kimyasal Hesaplamalar", "video_url": "https://youtube.com/results?search_query=mol+kavrami+kimya"}, {"name": "Gazlar", "video_url": "https://youtube.com/results?search_query=gazlar+kimya+ayt"}, {"name": "Sıvı Çözeltiler ve Çözünürlük", "video_url": "https://youtube.com/results?search_query=sivi+cozeltiler+kimya"}, {"name": "Kimyasal Tepkimelerde Enerji (Entalpi)", "video_url": "https://youtube.com/results?search_query=entalpi+kimya"}, {"name": "Kimyasal Tepkimelerde Hız", "video_url": "https://youtube.com/results?search_query=tepkime+hizi+kimya"}, {"name": "Kimyasal Denge", "video_url": "https://youtube.com/results?search_query=kimyasal+denge"}, {"name": "Asit-Baz Dengesi", "video_url": "https://youtube.com/results?search_query=asit+baz+dengesi"}, {"name": "Elektrokimya & Piller", "video_url": "https://youtube.com/results?search_query=elektrokimya+kimya"}, {"name": "Organik Kimyaya Giriş & Hidrokarbonlar", "video_url": "https://youtube.com/results?search_query=organik+kimya"}]}, "biyoloji": {"name": "Biyoloji", "color": "#10B981", "topics": [{"name": "Hücre ve Organeller", "video_url": "https://youtube.com/results?search_query=hucre+organeller+biyoloji"}, {"name": "Canlıların Temel Bileşikleri", "video_url": "https://youtube.com/results?search_query=temel+bilesikler+biyoloji"}, {"name": "Hücre Bölünmeleri & Kalıtım", "video_url": "https://youtube.com/results?search_query=hucre+bolunmeleri+biyoloji"}, {"name": "Sinir Sistemi & Duyu Organları", "video_url": "https://youtube.com/results?search_query=sinir+sistemi+biyoloji"}, {"name": "Endokrin Sistem", "video_url": "https://youtube.com/results?search_query=endokrin+sistem+biyoloji"}, {"name": "Dolaşım ve Bağışıklık Sistemi", "video_url": "https://youtube.com/results?search_query=dolasim+sistemi+biyoloji"}, {"name": "Solunum ve Boşaltım Sistemi", "video_url": "https://youtube.com/results?search_query=solunum+sistemi+biyoloji"}, {"name": "Genden Proteine (DNA & RNA)", "video_url": "https://youtube.com/results?search_query=genden+proteine+biyoloji"}, {"name": "Fotosentez & Kemosentez", "video_url": "https://youtube.com/results?search_query=fotosentez+biyoloji"}, {"name": "Hücresel Solunum", "video_url": "https://youtube.com/results?search_query=hucresel+solunum+biyoloji"}]}, "tarih": {"name": "Tarih", "color": "#F97316", "topics": [{"name": "İlk ve Orta Çağlarda Türk Dünyası", "video_url": "https://youtube.com/results?search_query=turk+dunyasi+tarih"}, {"name": "İslam Medeniyetinin Doğuşu", "video_url": "https://youtube.com/results?search_query=islam+tarihi"}, {"name": "Türklerin İslamiyeti Kabulü ve İlk Türk İslam Devletleri", "video_url": "https://youtube.com/results?search_query=ilk+turk+islam+devletleri"}, {"name": "Yerleşme ve Devletleşme Sürecinde Selçuklu & Osmanlı", "video_url": "https://youtube.com/results?search_query=osmanli+kurulus"}, {"name": "Klasik Çağda Osmanlı Devlet Teşkilatı", "video_url": "https://youtube.com/results?search_query=osmanli+devlet+teskilati"}, {"name": "Değişen Dünya Dengeleri Karşısında Osmanlı", "video_url": "https://youtube.com/results?search_query=osmanli+gerileme"}, {"name": "Milli Mücadele ve Kurtuluş Savaşı", "video_url": "https://youtube.com/results?search_query=kurtulus+savasi+tarih"}, {"name": "Atatürkçülük ve Türk İnkılabı", "video_url": "https://youtube.com/results?search_query=ataturk+inkilaplari"}]}, "cografya": {"name": "Coğrafya", "color": "#0EA5E9", "topics": [{"name": "Doğa ve İnsan - Harita Bilgisi", "video_url": "https://youtube.com/results?search_query=harita+bilgisi+cografya"}, {"name": "Dünyanın Şekli ve Hareketleri", "video_url": "https://youtube.com/results?search_query=dunyanin+hareketleri+cografya"}, {"name": "İklim Bilgisi & Sıcaklık Basınç Rüzgarlar", "video_url": "https://youtube.com/results?search_query=iklim+bilgisi+cografya"}, {"name": "Yerin Şekillenmesi (İç ve Dış Kuvvetler)", "video_url": "https://youtube.com/results?search_query=ic+dis+kuvvetler+cografya"}, {"name": "Nüfus ve Yerleşme", "video_url": "https://youtube.com/results?search_query=nufus+yerlesme+cografya"}, {"name": "Türkiye'nin Yer Şekilleri ve İklimi", "video_url": "https://youtube.com/results?search_query=turkiyenin+yer+sekilleri"}, {"name": "Ekonomik Faaliyetler & Bölgeler", "video_url": "https://youtube.com/results?search_query=ekonomik+faaliyetler+cografya"}]}};
+        const MASTER_14_DAYS_DATA = [{"day": 1, "title": "1. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d1_s1", "topic": "Fonksiyon Temel", "videoUrl": "https://youtu.be/DW5ppxQf00A?si=wYsCCxo0TXNevVFm", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d1_s2", "topic": "Nokta Analitiği", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DE0IMFIRICTf5bSpDd6sc6F&si=2KXPTja9Td5rtABA", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d1_s3", "topic": "Tam Sayılar (20 dk) + Ardışık (20 dk) + Tek Çift (20 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DG9G2oY2E7nu3-gJJctVefJ&si=UduxpfONNrbg2hqJ", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 2, "title": "2. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d2_s1", "topic": "Fonksiyon İleri", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEJ5eej9hac_wZpf8N1La7o&si=Z2nmKekzR6ZZn-HP", "stage": "1. Tekrar / İleri", "stageBadge": "stage-rep1", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d2_s2", "topic": "Doğru Analitiği", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEWqN9dTLT7azGNtNudFe-i&si=RbiWfjNlrGxH67Mn", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d2_s3", "topic": "Basamak Kavramı (30 dk) + Bölünebilme (30 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEdSGNszu48oPh71JluU9DV&si=fOLFv3ryL6Ncb2NZ", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 3, "title": "3. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d3_s1", "topic": "II. Dereceden Denklemler", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DHKH65_KsxdeS4rYFhECWmJ&si=oaPgbhTT1L6cz94B", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d3_s2", "topic": "Dönüşümler Analitiği", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEHJ22x3V89FmJnHb1Rj9Sc&si=ieUge4nisYK-grLR", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d3_s3", "topic": "Asal Sayılar (30 dk) + Pozitif Bölen (30 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEpIkVEyj3Jug56vwCAQRq1&si=7BNBNnIM7UKeUms", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 4, "title": "4. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d4_s1", "topic": "Parabol", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DF9CJypFlv8a3k6u8uvPwhG&si=_s5VFjtD28sOYJ92", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d4_s2", "topic": "Açılar (60 dk) + Analitik Tekrar (60 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DG4Xfr-5MpJS9nH-Zzy5JeA&si=GBxYEnur5qMjsmnw", "stage": "Yeni & Tekrar", "stageBadge": "stage-rep1", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d4_s3", "topic": "Faktöriyel (20 dk) + EBOB-EKOK (40 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFHyTXBqXx181tN2bF6XGNPr&si=xCI8C2qnMRJM4vjG", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 5, "title": "5. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d5_s1", "topic": "II. Dereceden Eşitsizlikler", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFxMgxZdkzkACrKte5OsZ04&si=VeW3Zbh2vHJ3ZBMD", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d5_s2", "topic": "Özel Üçgenler", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEmMGCfpCZlujan6oNkq1Vs&si=rWwBfrwgslNjK6ol", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d5_s3", "topic": "EBOB-EKOK (20 dk) + Rasyonel Sayılar (40 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEo4lt-ulqw79o6mXcmt5Qf&si=sEekelfdTZTZhwsN", "stage": "Tekrar & Yeni", "stageBadge": "stage-rep1", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 6, "title": "6. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d6_s1", "topic": "Polinomlar", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DGIwsdGz7IGczZ_sqCrY2ji&si=xhYpm7sjA7KdGx3l", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d6_s2", "topic": "Kenarortay (60 dk) + Doğru Analitiği Tekrar (60 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DHB1R5TdF0PJJdxw2eH09Si&si=j8E3SbGh6mO8aqFm", "stage": "Yeni & Tekrar", "stageBadge": "stage-rep1", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d6_s3", "topic": "I. Dereceden Eşitsizlikler", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFjfTCqQuE51Mk7LCsLwKZM&si=u3AnQ-0PjYwQAPmP", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 7, "title": "7. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d7_s1", "topic": "Logaritma", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFQIOZBsVIMNazJi1El4EAt&si=9gupzn3YU1P4ILYT", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d7_s2", "topic": "Açıortay (60 dk) + Dönüşümler Analitiği Tekrar (60 dk)", "videoUrl": "https://youtube.com/playlist?list=PLYXQFWO_iE9I&si=f0JYUhkUmFRfSfWc", "stage": "Yeni & Tekrar", "stageBadge": "stage-rep1", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d7_s3", "topic": "Üslü Sayılar", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DHGghEY3OK1kswc59R5mgCe&si=jRqyyts1H6x7SeP3i", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 8, "title": "8. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d8_s1", "topic": "Diziler (Genel)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFAa2innYnpz5rtlfTsWlkc&si=hCdjNOeixL39uhLu", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d8_s2", "topic": "Benzerlik", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFnoXZ50Gvp9TSwNvQt7BiN&si=zcuZw6KmLB1FV1Mr", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d8_s3", "topic": "Köklü Sayılar", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFxiK1CEzdOPupYRQkGSopo&si=2BRibKks6Vcc2Kqi", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 9, "title": "9. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d9_s1", "topic": "Aritmetik & Geometrik Dizi", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEyufm15_WplV3kPWFDQxaJ&si=VRLNWXWDaz6IklEA", "stage": "2. Tekrar / İleri", "stageBadge": "stage-rep2", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d9_s2", "topic": "Üçgende Alan", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFBYI1IyVSq5x85ZmuUBVXR&si=IdIVZ6fHzPH94URP", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d9_s3", "topic": "Çarpanlara Ayırma", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFDgXWrT3HRQO7nhk8l6Y-0&si=IPr0iMUa0WJKOmjs", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 10, "title": "10. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d10_s1", "topic": "Trigonometri (Bölüm 1-2)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEX-kTQmgkTV2ODkR83C2B_&si=K-TDC53DaIHJNxor", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d10_s2", "topic": "Açılar (30 dk) + Analitik (60 dk) + Benzerlik (30 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DG4Xfr-5MpJS9nH-Zzy5JeA&si=GBxYEnur5qMjsmnw", "stage": "Karma Tekrar", "stageBadge": "stage-rep2", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d10_s3", "topic": "Mutlak Değer", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFxiK1CEzdOPupYRQkGSopo&si=Hs83yxcz8h9AW_cC", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 11, "title": "11. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d11_s1", "topic": "Trigonometri (Bölüm 3-5)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEMC3kyR9a3a-2jRWXc4i7b&si=TlCm0Ivwy8HqBWlx", "stage": "İleri Konu", "stageBadge": "stage-rep1", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d11_s2", "topic": "Özel Üçgenler (60 dk) + Doğru Analitiği Tekrar (60 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEmMGCfpCZlujan6oNkq1Vs&si=rWwBfrwgslNjK6ol", "stage": "Karma Tekrar", "stageBadge": "stage-rep2", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d11_s3", "topic": "Oran Orantı", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFoJEQTPhb7gohkFXFXgy78&si=qHjN6jJ_LzcsmrNP", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 12, "title": "12. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d12_s1", "topic": "Limit ve Süreklilik", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DF7kXwc4OY4lmolp0sApt1I&si=F-guE5kvU9dFZolm", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d12_s2", "topic": "Kenarortay (30 dk) + Açıortay (30 dk) + Benzerlik (60 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFnoXZ50Gvp9TSwNvQt7BiN&si=zcuZw6KmLB1FV1Mr", "stage": "Karma Tekrar", "stageBadge": "stage-rep2", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d12_s3", "topic": "Kümeler", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFIdcbHZG1xHEZQ6FWMaCpq&si=WKYRWSc7cmmiM5Y8", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 13, "title": "13. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d13_s1", "topic": "Türev", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFtVs38okGaEIAvrkSWw6Sg&si=weXrn1GqFn8u6XVS", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d13_s2", "topic": "Kenarortay (30 dk) + Açıortay (30 dk) + Dönüşümler (60 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DEHJ22x3V89FmJnHb1Rj9Sc&si=ieUge4nisYK-grLR", "stage": "Karma Tekrar", "stageBadge": "stage-rep2", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d13_s3", "topic": "Kümeler (30 dk) + Mantık (30 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DF-eJU8GTjZv-Tgrtzw0Vhb&si=MG2Aav5MNXmndc9q", "stage": "Tekrar & Yeni", "stageBadge": "stage-rep1", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}, {"day": 14, "title": "14. Gün Çalışma Planı", "totalMinutes": 360, "timeRange": "10:00 - 17:30", "sessions": [{"id": "d14_s1", "topic": "İntegral", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DF8H9lkW7oZFCyliqHvyTsK&si=gnGKm_wSxEy2Pnhi", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 180, "timeSlot": "10:00 - 13:00 (AYT Mat)"}, {"id": "d14_s2", "topic": "Nokta An. (20 dk) + Doğru An. (20 dk) + Dönüşüm (20 dk) + Alan (60 dk)", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DFBYI1IyVSq5x85ZmuUBVXR&si=IdIVZ6fHzPH94URP", "stage": "Büyük Genel Tekrar", "stageBadge": "stage-rep2", "durationMinutes": 120, "timeSlot": "14:00 - 16:00 (Geometri)"}, {"id": "d14_s3", "topic": "Sayma & Binom Açılımı", "videoUrl": "https://youtube.com/playlist?list=PLfGn_uAf44DF-y7mCbLzTsRk4-epTYn7_&si=xHmZ0kp22LAL-trC", "stage": "Yeni Konu", "stageBadge": "stage-new", "durationMinutes": 60, "timeSlot": "16:30 - 17:30 (TYT Mat)"}]}];
+
+        let activePlan = [];
+        let currentActiveDay = 1;
+        let viewMode = 'cards';
+        let currentTheme = localStorage.getItem('yks_theme') || 'slate-dark';
+        let completedSessions = JSON.parse(localStorage.getItem('yks_completed_sessions') || '{}');
+        let appCurriculum = JSON.parse(localStorage.getItem('yks_custom_curriculum') || 'null') || JSON.parse(JSON.stringify(CURRICULUM));
+        
+        let llmConfig = JSON.parse(localStorage.getItem('yks_llm_config') || JSON.stringify({
+            provider: 'ollama',
+            endpoint: 'http://localhost:11434/api/generate',
+            model: 'qwen2.5:latest',
+            isActive: false
+        }));
+
+        // Modern Non-Intrusive Toast System
+        function showToast(message, type = 'info', title = '') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            toast.className = 'pointer-events-auto p-4 rounded-2xl shadow-2xl border flex items-start gap-3 transition-all duration-300 transform translate-y-2 opacity-0 theme-panel backdrop-blur-md';
+            
+            let icon = 'ℹ️';
+            let borderColor = 'var(--border-color)';
+            let defaultTitle = 'Bilgi';
+
+            if (type === 'success') {
+                icon = '✅';
+                borderColor = 'rgba(16, 185, 129, 0.4)';
+                defaultTitle = 'Başarılı';
+            } else if (type === 'warning') {
+                icon = '⚡';
+                borderColor = 'rgba(245, 158, 11, 0.4)';
+                defaultTitle = 'Uyarı / Optimizasyon';
+            } else if (type === 'error') {
+                icon = '❌';
+                borderColor = 'rgba(239, 68, 68, 0.4)';
+                defaultTitle = 'Dikkat';
+            }
+
+            toast.style.borderColor = borderColor;
+
+            toast.innerHTML = `
+                <span class="text-base shrink-0">${icon}</span>
+                <div class="flex-1 space-y-0.5">
+                    <div class="font-bold text-xs" style="color: var(--text-main)">${title || defaultTitle}</div>
+                    <div class="text-xs leading-relaxed opacity-90" style="color: var(--text-muted)">${message}</div>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-base font-bold opacity-60 hover:opacity-100 px-1" style="color: var(--text-muted)">&times;</button>
+            `;
+
+            container.appendChild(toast);
+
+            // Animate in
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            // Auto dismiss after 4.5 seconds
+            setTimeout(() => {
+                if (toast && toast.parentElement) {
+                    toast.classList.add('opacity-0', '-translate-y-2');
+                    setTimeout(() => toast.remove(), 300);
+                }
+            }, 4500);
+        }
+
+        function dismissSuggestionBanner() {
+            const banner = document.getElementById('aiSuggestionBanner');
+            if (banner) banner.classList.add('hidden');
+        }
+
+        // Global Daily Limits Management (1 to 24 Hours)
+        let globalDailyLimit = parseFloat(localStorage.getItem('yks_global_daily_limit') || '10');
+
+        function getGlobalDailyLimit() {
+            return globalDailyLimit;
+        }
+
+        function setGlobalDailyLimit(hoursVal) {
+            globalDailyLimit = Math.min(24, Math.max(1, parseFloat(hoursVal) || 10));
+            localStorage.setItem('yks_global_daily_limit', String(globalDailyLimit));
+            
+            const sel = document.getElementById('globalDailyLimitSelect');
+            if (sel) sel.value = String(globalDailyLimit);
+
+            // Check if active plan sessions exceed the new global limit and rescale if needed
+            let anyScaled = false;
+            if (activePlan && activePlan.length > 0) {
+                activePlan.forEach(d => {
+                    const dayMins = d.sessions.reduce((acc, s) => acc + s.durationMinutes, 0);
+                    if (dayMins > globalDailyLimit * 60) {
+                        rescaleDayToLimit(d.day, globalDailyLimit);
+                        anyScaled = true;
+                    }
+                });
+                if (anyScaled) {
+                    renderActiveDay();
+                    renderFullTable();
+                    renderDaysTabBar();
+                }
+            }
+            showToast(`Günlük maksimum çalışma hedefi ${globalDailyLimit} saat olarak ayarlandı.`, 'info', '🎯 Günlük Sınır');
+        }
+
+        function rescaleDayToLimit(dayNum, targetHours) {
+            const dayData = activePlan.find(d => d.day === dayNum);
+            if (!dayData || !dayData.sessions || dayData.sessions.length === 0) return;
+            
+            const targetMinutes = targetHours * 60;
+            const currentMins = dayData.sessions.reduce((acc, s) => acc + s.durationMinutes, 0);
+            if (currentMins > targetMinutes) {
+                const factor = targetMinutes / currentMins;
+                dayData.sessions.forEach(s => {
+                    s.durationMinutes = Math.max(15, Math.round((s.durationMinutes * factor) / 5) * 5);
+                });
+            }
+            recalculateDaySchedule(dayNum);
+        }
+
+        function saveCurriculumToStorage() {
+            localStorage.setItem('yks_custom_curriculum', JSON.stringify(appCurriculum));
+        }
+
+        // Session Modal Handlers & Management
+        function updateSessionDaySelectOptions() {
+            const sel = document.getElementById('editSessionDaySelect');
+            if (!sel) return;
+            sel.innerHTML = '';
+            activePlan.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.day;
+                opt.innerText = `${d.day}. Gün`;
+                sel.appendChild(opt);
+            });
+        }
+
+        function updateSessionPresetTopicOptions() {
+            const sel = document.getElementById('editSessionPresetTopicSelect');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- Müfredattan Seçin veya Aşağıya Yazın --</option>';
+            for (const [subKey, subObj] of Object.entries(appCurriculum)) {
+                if (subObj.topics && subObj.topics.length > 0) {
+                    const optGroup = document.createElement('optgroup');
+                    optGroup.label = subObj.name || subKey;
+                    subObj.topics.forEach(t => {
+                        const opt = document.createElement('option');
+                        opt.value = JSON.stringify({ name: t.name, url: t.video_url || '' });
+                        opt.innerText = t.name;
+                        optGroup.appendChild(opt);
+                    });
+                    sel.appendChild(optGroup);
+                }
+            }
+        }
+
+        function onSessionPresetTopicChange(val) {
+            if (!val) return;
+            try {
+                const parsed = JSON.parse(val);
+                document.getElementById('editSessionTopicInput').value = parsed.name || '';
+                document.getElementById('editSessionUrlInput').value = parsed.url || '';
+            } catch (e) {}
+        }
+
+        function openAddSessionModal(dayNumber = currentActiveDay) {
+            updateSessionDaySelectOptions();
+            updateSessionPresetTopicOptions();
+            document.getElementById('editSessionId').value = '';
+            document.getElementById('editSessionDay').value = dayNumber;
+            document.getElementById('editSessionDaySelect').value = dayNumber;
+            document.getElementById('editSessionPresetTopicSelect').value = '';
+            document.getElementById('editSessionTopicInput').value = '';
+            document.getElementById('editSessionDurationInput').value = 60;
+            document.getElementById('editSessionStageSelect').value = 'Yeni Konu';
+            document.getElementById('editSessionUrlInput').value = '';
+            document.getElementById('editSessionModalTitle').innerText = `${dayNumber}. Güne Yeni Oturum Ekle`;
+            document.getElementById('deleteSessionBtn').classList.add('hidden');
+            document.getElementById('editSessionModal').classList.remove('hidden');
+        }
+
+        function openEditSessionModal(sessionId) {
+            updateSessionDaySelectOptions();
+            updateSessionPresetTopicOptions();
+            
+            let foundSession = null;
+            let foundDay = null;
+            for (const d of activePlan) {
+                const s = d.sessions.find(x => x.id === sessionId);
+                if (s) {
+                    foundSession = s;
+                    foundDay = d;
+                    break;
+                }
+            }
+            if (!foundSession || !foundDay) return;
+            
+            document.getElementById('editSessionId').value = foundSession.id;
+            document.getElementById('editSessionDay').value = foundDay.day;
+            document.getElementById('editSessionDaySelect').value = foundDay.day;
+            document.getElementById('editSessionPresetTopicSelect').value = '';
+            document.getElementById('editSessionTopicInput').value = foundSession.topic || '';
+            document.getElementById('editSessionDurationInput').value = foundSession.durationMinutes || 60;
+            document.getElementById('editSessionStageSelect').value = foundSession.stage || 'Yeni Konu';
+            document.getElementById('editSessionUrlInput').value = foundSession.videoUrl || '';
+            document.getElementById('editSessionModalTitle').innerText = `${foundDay.day}. Gün: Oturumu Düzenle`;
+            document.getElementById('deleteSessionBtn').classList.remove('hidden');
+            document.getElementById('editSessionModal').classList.remove('hidden');
+        }
+
+        function closeEditSessionModal() {
+            document.getElementById('editSessionModal').classList.add('hidden');
+        }
+
+        function saveSessionModal() {
+            const sessionId = document.getElementById('editSessionId').value;
+            const targetDayNum = parseInt(document.getElementById('editSessionDaySelect').value);
+            const origDayNum = parseInt(document.getElementById('editSessionDay').value);
+            const topicName = document.getElementById('editSessionTopicInput').value.trim();
+            const duration = parseInt(document.getElementById('editSessionDurationInput').value) || 60;
+            const stage = document.getElementById('editSessionStageSelect').value;
+            const url = document.getElementById('editSessionUrlInput').value.trim();
+
+            if (!topicName) {
+                showToast('Lütfen ders/konu başlığı girin.', 'error', 'Eksik Bilgi');
+                return;
+            }
+
+            let stageBadge = 'stage-new';
+            if (stage === '1. Tekrar') stageBadge = 'stage-rep1';
+            else if (stage === '2. Tekrar') stageBadge = 'stage-rep2';
+            else if (stage.includes('Soru') || stage.includes('Test')) stageBadge = 'stage-rep1';
+
+            const targetDay = activePlan.find(d => d.day === targetDayNum);
+            if (!targetDay) return;
+
+            if (!sessionId) {
+                // Add new session
+                const newId = `d${targetDayNum}_s${Date.now()}`;
+                targetDay.sessions.push({
+                    id: newId,
+                    topic: topicName,
+                    videoUrl: url || getTopicVideoUrl(topicName, ''),
+                    stage: stage,
+                    stageBadge: stageBadge,
+                    durationMinutes: duration,
+                    timeSlot: ''
+                });
+                recalculateDaySchedule(targetDayNum);
+                showToast(`"${topicName}" oturumu ${targetDayNum}. güne eklendi.`, 'success', 'Oturum Eklendi');
+            } else {
+                // Edit existing session
+                if (targetDayNum !== origDayNum) {
+                    const origDay = activePlan.find(d => d.day === origDayNum);
+                    if (origDay) {
+                        const sIdx = origDay.sessions.findIndex(x => x.id === sessionId);
+                        if (sIdx !== -1) {
+                            const [removed] = origDay.sessions.splice(sIdx, 1);
+                            removed.topic = topicName;
+                            removed.videoUrl = url || getTopicVideoUrl(topicName, '');
+                            removed.stage = stage;
+                            removed.stageBadge = stageBadge;
+                            removed.durationMinutes = duration;
+                            targetDay.sessions.push(removed);
+                            recalculateDaySchedule(origDayNum);
+                        }
+                    }
+                } else {
+                    const s = targetDay.sessions.find(x => x.id === sessionId);
+                    if (s) {
+                        s.topic = topicName;
+                        s.videoUrl = url || getTopicVideoUrl(topicName, '');
+                        s.stage = stage;
+                        s.stageBadge = stageBadge;
+                        s.durationMinutes = duration;
+                    }
+                }
+                recalculateDaySchedule(targetDayNum);
+                showToast(`"${topicName}" oturumu güncellendi.`, 'success', 'Oturum Güncellendi');
+            }
+
+            closeEditSessionModal();
+        }
+
+        function deleteSession(sessionId) {
+            for (const d of activePlan) {
+                const idx = d.sessions.findIndex(x => x.id === sessionId);
+                if (idx !== -1) {
+                    const topicName = d.sessions[idx].topic;
+                    d.sessions.splice(idx, 1);
+                    delete completedSessions[sessionId];
+                    localStorage.setItem('yks_completed_sessions', JSON.stringify(completedSessions));
+                    recalculateDaySchedule(d.day);
+                    showToast(`"${topicName}" oturumu silindi.`, 'info', 'Oturum Kaldırıldı');
+                    return;
+                }
+            }
+        }
+
+        function deleteSessionFromModal() {
+            const sessionId = document.getElementById('editSessionId').value;
+            if (sessionId) {
+                deleteSession(sessionId);
+                closeEditSessionModal();
+            }
+        }
+
+        function recalculateDaySchedule(dayNumber) {
+            const dayData = activePlan.find(d => d.day === dayNumber);
+            if (!dayData) return;
+
+            let currentMinutes = 10 * 60; // default 10:00
+            const breakMinutes = 20;
+
+            let totalMinutes = 0;
+            dayData.sessions.forEach(s => {
+                totalMinutes += s.durationMinutes;
+                const startH = Math.floor(currentMinutes / 60);
+                const startM = currentMinutes % 60;
+                currentMinutes += s.durationMinutes;
+                const endH = Math.floor(currentMinutes / 60);
+                const endM = currentMinutes % 60;
+                s.timeSlot = String(startH).padStart(2, '0') + ':' + String(startM).padStart(2, '0') + ' - ' +
+                             String(endH).padStart(2, '0') + ':' + String(endM).padStart(2, '0');
+                currentMinutes += breakMinutes;
+            });
+
+            dayData.totalMinutes = totalMinutes;
+            const endMinutesWithoutLastBreak = dayData.sessions.length > 0 ? (currentMinutes - breakMinutes) : (10 * 60);
+            const endH = Math.floor(endMinutesWithoutLastBreak / 60);
+            const endM = endMinutesWithoutLastBreak % 60;
+            dayData.timeRange = '10:00 - ' + String(endH).padStart(2, '0') + ':' + String(endM).padStart(2, '0');
+
+            renderDaysTabBar();
+            renderActiveDay();
+            renderFullTable();
+            updateOverallProgress();
+        }
+
+        // Helper to retrieve effective video url from appCurriculum
+        function getTopicVideoUrl(topicName, fallbackUrl = '') {
+            if (!topicName) return fallbackUrl;
+            
+            // Search across all subjects in appCurriculum
+            for (const sub of Object.values(appCurriculum)) {
+                const found = sub.topics.find(t => t.name.toLowerCase() === topicName.toLowerCase());
+                if (found) return found.video_url || '';
+            }
+            return fallbackUrl;
+        }
+
+        function applyCustomLinksToPlan(plan) {
+            if (!plan || !Array.isArray(plan)) return;
+            plan.forEach(d => {
+                if (d.sessions) {
+                    d.sessions.forEach(s => {
+                        s.videoUrl = getTopicVideoUrl(s.topic, s.videoUrl);
+                    });
+                }
+            });
+        }
+
+        // Theme Switcher Function
+        function setTheme(themeName) {
+            currentTheme = themeName;
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('yks_theme', themeName);
+
+            ['slate-dark', 'dark', 'paper', 'light'].forEach(t => {
+                const btn = document.getElementById('theme-' + t + '-btn');
+                if (btn) {
+                    if (t === themeName) {
+                        btn.className = 'p-1.5 rounded-lg text-xs font-semibold transition-all bg-indigo-600 text-white shadow-md scale-110';
+                    } else {
+                        btn.className = 'p-1.5 rounded-lg text-xs font-semibold transition-all opacity-60 hover:opacity-100';
+                    }
+                }
+            });
+        }
+
+        // Initialize Application
+        function initApp() {
+            setTheme(currentTheme);
+            activePlan = JSON.parse(JSON.stringify(MASTER_14_DAYS_DATA));
+            applyCustomLinksToPlan(activePlan);
+            
+            const limitSel = document.getElementById('globalDailyLimitSelect');
+            if (limitSel) limitSel.value = String(globalDailyLimit);
+            
+            loadLLMSettingsToUI();
+            updateSubjectSelectOptions();
+            setNlpMode('active');
+            renderDaysTabBar();
+            renderActiveDay();
+            renderFullTable();
+            renderCurriculumLibrary();
+            updateOverallProgress();
+            generateAICoachInsights();
+        }
+
+        // LLM Settings UI Handlers
+        function openLLMSettings() {
+            document.getElementById('llmSettingsModal').classList.remove('hidden');
+        }
+
+        function closeLLMSettings() {
+            document.getElementById('llmSettingsModal').classList.add('hidden');
+        }
+
+        function loadLLMSettingsToUI() {
+            document.getElementById('llmProviderSelect').value = llmConfig.provider;
+            document.getElementById('llmEndpointInput').value = llmConfig.endpoint;
+            document.getElementById('llmModelInput').value = llmConfig.model;
+            document.getElementById('llmActiveToggle').checked = llmConfig.isActive;
+            updateLLMStatusBadge();
+        }
+
+        function updateLLMDefaults() {
+            const prov = document.getElementById('llmProviderSelect').value;
+            if (prov === 'ollama') {
+                document.getElementById('llmEndpointInput').value = 'http://localhost:11434/api/generate';
+                document.getElementById('llmModelInput').value = 'qwen2.5:latest';
+            } else if (prov === 'lmstudio') {
+                document.getElementById('llmEndpointInput').value = 'http://localhost:1234/v1/chat/completions';
+                document.getElementById('llmModelInput').value = 'local-model';
+            }
+        }
+
+        function saveLLMSettings() {
+            llmConfig = {
+                provider: document.getElementById('llmProviderSelect').value,
+                endpoint: document.getElementById('llmEndpointInput').value.trim(),
+                model: document.getElementById('llmModelInput').value.trim(),
+                isActive: document.getElementById('llmActiveToggle').checked
+            };
+            localStorage.setItem('yks_llm_config', JSON.stringify(llmConfig));
+            updateLLMStatusBadge();
+        }
+
+        function saveAndCloseLLMSettings() {
+            saveLLMSettings();
+            closeLLMSettings();
+        }
+
+        function updateLLMStatusBadge() {
+            const badge = document.getElementById('llmModeBadge');
+            if (!badge) return;
+            if (llmConfig.isActive) {
+                badge.innerHTML = '🟢 Yerel LLM (' + llmConfig.model + ') Aktif';
+                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 cursor-pointer';
+            } else {
+                badge.innerHTML = '⚡ Yerel NLP & Kural Motoru Aktif';
+                badge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 flex items-center gap-1 cursor-pointer';
+            }
+        }
+
+        async function testLLMConnection() {
+            const statusEl = document.getElementById('llmConnectionStatus');
+            statusEl.innerHTML = '⏳ Bağlantı test ediliyor...';
+            statusEl.className = 'p-2.5 rounded-xl text-[11px] font-semibold flex items-center gap-2 border bg-amber-500/10 text-amber-400 border-amber-500/30';
+
+            const endpoint = document.getElementById('llmEndpointInput').value.trim();
+            const model = document.getElementById('llmModelInput').value.trim();
+            const provider = document.getElementById('llmProviderSelect').value;
+
+            try {
+                let res;
+                if (provider === 'ollama') {
+                    res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: model, prompt: 'ping', stream: false })
+                    });
+                } else {
+                    res = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ model: model, messages: [{ role: 'user', content: 'ping' }], max_tokens: 5 })
+                    });
+                }
+
+                if (res.ok) {
+                    statusEl.innerHTML = '✅ Bağlantı Başarılı! (' + model + ' yanıt verdi)';
+                    statusEl.className = 'p-2.5 rounded-xl text-[11px] font-semibold flex items-center gap-2 border bg-emerald-500/10 text-emerald-400 border-emerald-500/30';
+                } else {
+                    throw new Error('HTTP ' + res.status);
+                }
+            } catch (err) {
+                statusEl.innerHTML = '❌ Bağlantı Kurulamadı (' + err.message + '). Yerel Ollama veya LM Studio açık mı?';
+                statusEl.className = 'p-2.5 rounded-xl text-[11px] font-semibold flex items-center gap-2 border bg-red-500/10 text-red-400 border-red-500/30';
+            }
+        }
+
+        // Render Day navigation tabs
+        function renderDaysTabBar() {
+            const container = document.getElementById('daysTabBar');
+            container.innerHTML = '';
+
+            activePlan.forEach((d) => {
+                const isActive = d.day === currentActiveDay;
+                const completedCount = d.sessions.filter(s => completedSessions[s.id]).length;
+                const isAllDone = completedCount === d.sessions.length && d.sessions.length > 0;
+
+                const btn = document.createElement('button');
+                btn.className = `flex-shrink-0 px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 border transition-all ${
+                    isActive 
+                    ? 'bg-indigo-600 text-white border-indigo-500 shadow-lg shadow-indigo-600/30 scale-105' 
+                    : 'theme-card'
+                }`;
+                btn.onclick = () => selectDay(d.day);
+
+                btn.innerHTML = `
+                    <span>${d.day}. Gün</span>
+                    ${isAllDone 
+                        ? '<span class="w-2 h-2 rounded-full bg-emerald-500"></span>' 
+                        : (completedCount > 0 ? `<span class="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-500/30 text-indigo-400 font-bold">${completedCount}/${d.sessions.length}</span>` : '')
+                    }
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function selectDay(dayNumber) {
+            currentActiveDay = dayNumber;
+            renderDaysTabBar();
+            renderActiveDay();
+            generateAICoachInsights();
+        }
+
+        // Render Active Day Cards (SADECE KONU ADI BÜYÜK YAZILIR)
+        function renderActiveDay() {
+            const dayData = activePlan.find(d => d.day === currentActiveDay);
+            if (!dayData) return;
+
+            document.getElementById('activeDayBadge').innerText = dayData.day + '. GÜN';
+            document.getElementById('activeDayTitle').innerText = dayData.day + '. Gün Çalışma Planı';
+            document.getElementById('activeDayTimeRange').innerText = 'Çalışma Saatleri: ' + dayData.timeRange + ' • Toplam ' + dayData.totalMinutes + ' dk (' + (dayData.totalMinutes / 60).toFixed(1) + ' Saat)';
+
+            const container = document.getElementById('topicCardsList');
+            container.innerHTML = '';
+
+            if (!dayData.sessions || dayData.sessions.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full p-8 rounded-2xl border text-center space-y-3 theme-panel" style="border-color: var(--border-color)">
+                        <span class="text-3xl">📭</span>
+                        <h4 class="font-bold text-sm">Bu Gün İçin Henüz Oturum Yok</h4>
+                        <p class="text-xs" style="color: var(--text-muted)">Yukarıdaki "Bu Güne Oturum Ekle" butonuna basarak ders ekleyebilirsiniz.</p>
+                        <button onclick="openAddSessionModal(currentActiveDay)" class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all">
+                            ➕ İlk Oturumu Ekle
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+
+            dayData.sessions.forEach((session) => {
+                const isCompleted = !!completedSessions[session.id];
+                const card = document.createElement('div');
+                card.className = `theme-card p-5 rounded-2xl flex flex-col justify-between space-y-4 ${
+                    isCompleted ? 'border-emerald-500/50 bg-emerald-950/10' : ''
+                }`;
+
+                const safeTopic = (session.topic || '').replace(/'/g, "\'");
+                const effectiveVideoUrl = getTopicVideoUrl(session.topic, session.videoUrl);
+                const hasVideo = !!effectiveVideoUrl && effectiveVideoUrl !== '#';
+
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${session.stageBadge || 'stage-new'}">
+                                ${session.stage || 'Ders Oturumu'}
+                            </span>
+                            <span class="text-xs font-medium px-2.5 py-1 rounded-full border" style="background: var(--bg-panel); border-color: var(--border-color); color: var(--text-muted)">
+                                ⏱️ ${session.durationMinutes} dk (${session.timeSlot})
+                            </span>
+                        </div>
+
+                        <!-- SADECE KONU ADI -->
+                        <div class="pt-1">
+                            <h3 class="text-lg sm:text-xl font-extrabold tracking-tight cursor-pointer hover:text-indigo-500 transition-colors flex items-center gap-1.5" onclick="openVideoUrl('${effectiveVideoUrl || ('https://youtube.com/results?search_query=' + encodeURIComponent(session.topic + ' ders anlatımı'))}')" title="Videoyu Aç">
+                                ${session.topic}
+                                <span class="text-xs opacity-60 hover:opacity-100">↗</span>
+                            </h3>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t flex flex-col gap-2.5" style="border-color: var(--border-color)">
+                        <div class="flex items-center justify-between gap-2 flex-wrap">
+                            <!-- Direct Video Link or Search Button -->
+                            ${hasVideo ? `
+                                <a href="${effectiveVideoUrl}" target="_blank" class="flex-1 min-w-[75px] py-2 px-3 rounded-xl bg-red-600/20 hover:bg-red-600/30 text-red-500 border border-red-500/30 text-xs font-semibold flex items-center justify-center gap-1 transition-all" title="Ders Videosu">
+                                    <span>▶️</span> Video
+                                </a>
+                            ` : `
+                                <a href="https://youtube.com/results?search_query=${encodeURIComponent(session.topic + ' ders anlatımı')}" target="_blank" class="flex-1 min-w-[75px] py-2 px-3 rounded-xl border theme-card text-xs font-semibold flex items-center justify-center gap-1 transition-all" title="YouTube Video Ara">
+                                    <span>🔍</span> Video
+                                </a>
+                            `}
+
+                            <!-- Edit Session Button -->
+                            <button onclick="openEditSessionModal('${session.id}')" class="py-2 px-3 rounded-xl border theme-card hover:border-indigo-500 text-xs font-semibold flex items-center justify-center gap-1 transition-all" title="Bu Oturumu Düzenle">
+                                <span>✏️</span> Düzenle
+                            </button>
+
+                            <!-- Pomodoro Button -->
+                            <button onclick="openPomodoro('${safeTopic}', '${session.stage}', ${session.durationMinutes})" class="py-2 px-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-500 border border-indigo-500/30 text-xs font-semibold flex items-center justify-center gap-1 transition-all" title="Odaklanma Sayacı">
+                                ⏱️ Odaklan
+                            </button>
+
+                            <!-- Delete Session Button -->
+                            <button onclick="deleteSession('${session.id}')" class="py-2 px-2.5 rounded-xl border theme-card hover:border-rose-500 text-rose-400 hover:text-rose-500 text-xs font-semibold flex items-center justify-center transition-all" title="Oturumu Günden Kaldır">
+                                🗑️
+                            </button>
+                        </div>
+
+                        <!-- Complete Checkbox -->
+                        <label class="flex items-center justify-between p-2 rounded-xl border cursor-pointer transition-all" style="background: var(--bg-panel); border-color: var(--border-color)">
+                            <span class="text-xs font-medium" style="color: var(--text-muted)">Tamamlandı Olarak İşaretle</span>
+                            <input type="checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleSessionComplete('${session.id}')" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        </label>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // Render Full 14-Days Table View
+        function renderFullTable() {
+            const tbody = document.getElementById('fullTableBody');
+            tbody.innerHTML = '';
+
+            activePlan.forEach((d) => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-500/5 transition-colors';
+
+                const s1 = d.sessions[0] || { topic: '-', durationMinutes: 0, videoUrl: '#' };
+                const s2 = d.sessions[1] || { topic: '-', durationMinutes: 0, videoUrl: '#' };
+                const s3 = d.sessions[2] || { topic: '-', durationMinutes: 0, videoUrl: '#' };
+
+                const url1 = getTopicVideoUrl(s1.topic, s1.videoUrl) || ('https://youtube.com/results?search_query=' + encodeURIComponent(s1.topic));
+                const url2 = getTopicVideoUrl(s2.topic, s2.videoUrl) || ('https://youtube.com/results?search_query=' + encodeURIComponent(s2.topic));
+                const url3 = getTopicVideoUrl(s3.topic, s3.videoUrl) || ('https://youtube.com/results?search_query=' + encodeURIComponent(s3.topic));
+
+                const doneCount = d.sessions.filter(s => completedSessions[s.id]).length;
+                const isAllDone = doneCount === d.sessions.length && d.sessions.length > 0;
+
+                tr.innerHTML = `
+                    <td class="p-3 font-bold whitespace-nowrap">${d.day}. Gün</td>
+                    <td class="p-3">
+                        <div class="font-semibold flex items-center gap-1.5 flex-wrap">
+                            <a href="${url1}" target="_blank" class="hover:text-indigo-500">${s1.topic}</a>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded ${s1.stageBadge || ''}">${s1.stage || ''}</span>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-semibold flex items-center gap-1.5 flex-wrap">
+                            <a href="${url2}" target="_blank" class="hover:text-amber-500">${s2.topic}</a>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded ${s2.stageBadge || ''}">${s2.stage || ''}</span>
+                        </div>
+                    </td>
+                    <td class="p-3">
+                        <div class="font-semibold flex items-center gap-1.5 flex-wrap">
+                            <a href="${url3}" target="_blank" class="hover:text-emerald-500">${s3.topic}</a>
+                            <span class="text-[10px] px-1.5 py-0.5 rounded ${s3.stageBadge || ''}">${s3.stage || ''}</span>
+                        </div>
+                    </td>
+                    <td class="p-3 text-right">
+                        <span class="px-2 py-1 rounded-md text-[10px] font-bold ${isAllDone ? 'bg-emerald-500/20 text-emerald-500' : 'theme-card'}">
+                            ${isAllDone ? '✓ Tamam' : doneCount + '/' + d.sessions.length}
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Update Dropdown Options for Subjects
+        function updateSubjectSelectOptions() {
+            const sel = document.getElementById('editTopicSubjectSelect');
+            if (!sel) return;
+            sel.innerHTML = '';
+            for (const [key, sub] of Object.entries(appCurriculum)) {
+                const opt = document.createElement('option');
+                opt.value = key;
+                opt.innerText = sub.name;
+                sel.appendChild(opt);
+            }
+        }
+
+        // Render Curriculum Library
+        function renderCurriculumLibrary() {
+            const container = document.getElementById('curriculumGrid');
+            if (!container) return;
+            container.innerHTML = '';
+
+            let totalTopicsCount = 0;
+
+            for (const [key, subject] of Object.entries(appCurriculum)) {
+                totalTopicsCount += (subject.topics ? subject.topics.length : 0);
+                const col = document.createElement('div');
+                col.className = 'p-3.5 rounded-2xl border theme-card space-y-2 flex flex-col justify-between';
+
+                let listHtml = '';
+                if (!subject.topics || subject.topics.length === 0) {
+                    listHtml = '<li class="text-xs py-4 text-center italic opacity-60">Henüz konu eklenmedi</li>';
+                } else {
+                    subject.topics.forEach((t, idx) => {
+                        const url = t.video_url || '';
+                        const hasUrl = !!url && url !== '#';
+                        const safeName = (t.name || '').replace(/'/g, "\'");
+                        const safeUrl = (url || '').replace(/'/g, "\'");
+
+                        listHtml += `
+                            <li class="flex items-center justify-between text-xs py-1.5 border-b gap-1 hover:bg-slate-500/5 px-1 rounded transition-colors" style="border-color: var(--border-color)">
+                                <div class="flex items-center gap-1 truncate max-w-[120px] sm:max-w-[140px]" title="${t.name}">
+                                    <span class="truncate font-medium" style="color: var(--text-main)">${idx + 1}. ${t.name}</span>
+                                </div>
+                                <div class="flex items-center gap-1 shrink-0">
+                                    ${hasUrl ? `<a href="${url}" target="_blank" class="text-red-500 hover:text-red-400 font-bold px-1.5 py-0.5 rounded border border-red-500/20 hover:bg-red-500/10 text-[10px]" title="Videoyu Aç">▶</a>` : ''}
+                                    <button onclick="openEditTopicModal('${safeName}', '${safeUrl}', '${key}')" class="text-indigo-400 hover:text-indigo-300 px-1.5 py-0.5 rounded border theme-card text-[10px]" title="Düzenle">✏️</button>
+                                    <button onclick="deleteTopic('${key}', ${idx})" class="text-rose-400 hover:text-rose-300 px-1.5 py-0.5 rounded border theme-card hover:border-rose-500 text-[10px]" title="Bu Konuyu Sil">🗑️</button>
+                                </div>
+                            </li>
+                        `;
+                    });
+                }
+
+                col.innerHTML = `
+                    <div>
+                        <div class="font-bold text-xs text-indigo-500 border-b pb-2 flex justify-between items-center" style="border-color: var(--border-color)">
+                            <div class="flex items-center gap-1 truncate mr-1">
+                                <span class="truncate">${subject.name}</span>
+                                ${subject.isCustom ? `<button onclick="deleteCategory('${key}')" class="text-rose-400 hover:text-rose-300 text-[10px] ml-1" title="Bu Alanı Sil">🗑️</button>` : ''}
+                            </div>
+                            <div class="flex items-center gap-1 shrink-0">
+                                <span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-500/10" style="color: var(--text-muted)">${subject.topics ? subject.topics.length : 0}</span>
+                                <button onclick="openEditTopicModal('', '', '${key}')" class="text-[11px] px-1.5 py-0.5 rounded border theme-card hover:border-indigo-500 text-indigo-400 font-bold" title="Bu Alana Yeni Konu Ekle">+</button>
+                            </div>
+                        </div>
+                        <ul class="space-y-0.5 max-h-56 overflow-y-auto custom-scrollbar pr-1 mt-1.5">
+                            ${listHtml}
+                        </ul>
+                    </div>
+                `;
+                container.appendChild(col);
+            }
+
+            const badge = document.getElementById('curriculumTopicCountBadge');
+            if (badge) badge.innerText = totalTopicsCount + ' Konu (' + Object.keys(appCurriculum).length + ' Alan)';
+        }
+
+        // Category Management Handlers
+        function openAddCategoryModal() {
+            document.getElementById('newCategoryNameInput').value = '';
+            document.getElementById('addCategoryModal').classList.remove('hidden');
+        }
+
+        function closeAddCategoryModal() {
+            document.getElementById('addCategoryModal').classList.add('hidden');
+        }
+
+        function saveNewCategory() {
+            const name = document.getElementById('newCategoryNameInput').value.trim();
+            if (!name) {
+                showToast('Lütfen bir ders veya alan adı girin.', 'error', 'Eksik Bilgi');
+                return;
+            }
+            const key = 'custom_' + name.toLowerCase().replace(/[^a-z0-9]/gi, '_') + '_' + Date.now();
+            appCurriculum[key] = {
+                name: name,
+                isCustom: true,
+                topics: []
+            };
+            saveCurriculumToStorage();
+            closeAddCategoryModal();
+            updateSubjectSelectOptions();
+            renderCurriculumLibrary();
+            showToast('"' + name + '" alanı başarıyla eklendi! Şimdi konular ekleyebilirsiniz.', 'success', 'Kategori Eklendi');
+        }
+
+        function deleteCategory(key) {
+            const cat = appCurriculum[key];
+            if (!cat) return;
+            if (confirm('"' + cat.name + '" alanını ve içindeki tüm konuları silmek istediğinize emin misiniz?')) {
+                delete appCurriculum[key];
+                saveCurriculumToStorage();
+                updateSubjectSelectOptions();
+                renderCurriculumLibrary();
+                showToast('"' + cat.name + '" alanı silindi.', 'info', 'Kategori Silindi');
+            }
+        }
+
+        // Topic Management Handlers
+        let editingSubjectKey = '';
+        let editingTopicIndex = -1;
+
+        function openEditTopicModal(topicName = '', url = '', subjectKey = '') {
+            updateSubjectSelectOptions();
+            editingTopicIndex = -1;
+            editingSubjectKey = subjectKey || Object.keys(appCurriculum)[0] || '';
+
+            if (topicName) {
+                for (const [sKey, sObj] of Object.entries(appCurriculum)) {
+                    if (sObj.topics) {
+                        const idx = sObj.topics.findIndex(t => t.name.toLowerCase() === topicName.toLowerCase());
+                        if (idx !== -1) {
+                            editingSubjectKey = sKey;
+                            editingTopicIndex = idx;
+                            url = url || sObj.topics[idx].video_url || '';
+                            break;
+                        }
+                    }
+                }
+            }
+
+            document.getElementById('editTopicSubjectSelect').value = editingSubjectKey;
+            document.getElementById('editTopicNameInput').value = topicName || '';
+            document.getElementById('editTopicUrlInput').value = url || '';
+            document.getElementById('editTopicModalTitle').innerText = topicName ? 'Konuyu Düzenle' : 'Yeni Konu Ekle';
+            document.getElementById('editTopicModal').classList.remove('hidden');
+        }
+
+        function closeEditTopicModal() {
+            document.getElementById('editTopicModal').classList.add('hidden');
+        }
+
+        function testLinkInModal() {
+            const url = document.getElementById('editTopicUrlInput').value.trim();
+            if (url) {
+                window.open(url, '_blank');
+            } else {
+                showToast('Lütfen test etmek için geçerli bir URL girin.', 'warning', 'Geçersiz Link');
+            }
+        }
+
+        function saveTopic() {
+            const subjectKey = document.getElementById('editTopicSubjectSelect').value;
+            const name = document.getElementById('editTopicNameInput').value.trim();
+            const url = document.getElementById('editTopicUrlInput').value.trim();
+
+            if (!name) {
+                showToast('Lütfen bir konu başlığı girin.', 'error', 'Eksik Bilgi');
+                return;
+            }
+
+            if (!appCurriculum[subjectKey]) {
+                appCurriculum[subjectKey] = { name: subjectKey, topics: [] };
+            }
+
+            if (editingTopicIndex >= 0 && editingSubjectKey === subjectKey) {
+                appCurriculum[subjectKey].topics[editingTopicIndex] = { name: name, video_url: url };
+            } else if (editingTopicIndex >= 0 && editingSubjectKey !== subjectKey) {
+                appCurriculum[editingSubjectKey].topics.splice(editingTopicIndex, 1);
+                appCurriculum[subjectKey].topics.push({ name: name, video_url: url });
+            } else {
+                const existingIdx = appCurriculum[subjectKey].topics.findIndex(t => t.name.toLowerCase() === name.toLowerCase());
+                if (existingIdx !== -1) {
+                    appCurriculum[subjectKey].topics[existingIdx].video_url = url;
+                } else {
+                    appCurriculum[subjectKey].topics.push({ name: name, video_url: url });
+                }
+            }
+
+            saveCurriculumToStorage();
+
+            // Update current active plan
+            activePlan.forEach(d => {
+                d.sessions.forEach(s => {
+                    if (s.topic.toLowerCase() === name.toLowerCase()) {
+                        s.videoUrl = url;
+                    }
+                });
+            });
+
+            closeEditTopicModal();
+            renderCurriculumLibrary();
+            renderActiveDay();
+            renderFullTable();
+            showToast('"' + name + '" konusu başarıyla kaydedildi!', 'success', 'Konu Kaydedildi');
+        }
+
+        function deleteTopic(subjectKey, topicIndex) {
+            const sub = appCurriculum[subjectKey];
+            if (!sub || !sub.topics || !sub.topics[topicIndex]) return;
+            const topicName = sub.topics[topicIndex].name;
+            if (confirm('"' + topicName + '" konusunu listeden silmek istediğinize emin misiniz?')) {
+                sub.topics.splice(topicIndex, 1);
+                saveCurriculumToStorage();
+                renderCurriculumLibrary();
+            }
+        }
+
+        function openVideoUrl(url) {
+            if (url && url !== '#') {
+                window.open(url, '_blank');
+            }
+        }
+
+        function toggleSessionComplete(sessionId) {
+            if (completedSessions[sessionId]) {
+                delete completedSessions[sessionId];
+            } else {
+                completedSessions[sessionId] = true;
+            }
+            localStorage.setItem('yks_completed_sessions', JSON.stringify(completedSessions));
+            renderActiveDay();
+            renderDaysTabBar();
+            renderFullTable();
+            updateOverallProgress();
+        }
+
+        function markEntireDayComplete() {
+            const dayData = activePlan.find(d => d.day === currentActiveDay);
+            if (!dayData) return;
+            dayData.sessions.forEach(s => {
+                completedSessions[s.id] = true;
+            });
+            localStorage.setItem('yks_completed_sessions', JSON.stringify(completedSessions));
+            renderActiveDay();
+            renderDaysTabBar();
+            renderFullTable();
+            updateOverallProgress();
+        }
+
+        function updateOverallProgress() {
+            let total = 0;
+            let done = 0;
+            activePlan.forEach(d => {
+                d.sessions.forEach(s => {
+                    total++;
+                    if (completedSessions[s.id]) done++;
+                });
+            });
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+            document.getElementById('overallProgressText').innerText = '%' + pct + ' (' + done + '/' + total + ' Blok)';
+            document.getElementById('overallProgressBar').style.width = pct + '%';
+        }
+
+        function toggleViewMode() {
+            const cardsView = document.getElementById('singleDayContainer');
+            const tableView = document.getElementById('fullTableViewContainer');
+            const viewText = document.getElementById('viewModeText');
+
+            if (viewMode === 'cards') {
+                viewMode = 'table';
+                cardsView.classList.add('hidden');
+                tableView.classList.remove('hidden');
+                viewText.innerText = 'Günlük Kart Görünümü';
+            } else {
+                viewMode = 'cards';
+                cardsView.classList.remove('hidden');
+                tableView.classList.add('hidden');
+                viewText.innerText = 'Tüm Günler Tablosu';
+            }
+        }
+
+        function toggleCurriculumView() {
+            const content = document.getElementById('curriculumContent');
+            const chevron = document.getElementById('curriculumChevron');
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                chevron.innerText = '▲';
+            } else {
+                content.classList.add('hidden');
+                chevron.innerText = '▼';
+            }
+        }
+
+        // NLP Mode State ('active' = modify/ask on active schedule, 'fresh' = generate new schedule)
+        let currentNlpMode = 'active';
+
+        function setNlpMode(mode) {
+            currentNlpMode = mode;
+            const btnActive = document.getElementById('btnModeActive');
+            const btnFresh = document.getElementById('btnModeFresh');
+            const desc = document.getElementById('nlpModeDesc');
+            const hint = document.getElementById('nlpStatusHint');
+            const promptInput = document.getElementById('userPromptInput');
+
+            if (mode === 'active') {
+                if (btnActive) btnActive.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white shadow-md cursor-pointer';
+                if (btnFresh) btnFresh.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all opacity-60 hover:opacity-100 theme-card cursor-pointer';
+                if (desc) desc.innerText = 'Mevcut programı korur; sadece belirttiğiniz dersi ekler/çıkarır veya takvim hakkındaki sorularınızı yanıtlar.';
+                if (hint) hint.innerText = 'Aktif Takvimi Koruma Modu Açık (Doğal dil ile anında ekle/çıkar/sor)';
+                if (promptInput) promptInput.placeholder = 'Örn: 3. güne 1 saat geometri ekle VEYA bugün toplam kaç saat ders var? VEYA 2. günden TYT matematiği çıkar';
+            } else {
+                if (btnFresh) btnFresh.className = 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-purple-600 text-white shadow-md cursor-pointer';
+                if (btnActive) btnActive.className = 'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all opacity-60 hover:opacity-100 theme-card cursor-pointer';
+                if (desc) desc.innerText = 'Yazdığınız isteklere göre baştan yepyeni bir çalışma programı hesaplar ve takvimi sıfırlar.';
+                if (hint) hint.innerText = 'Sıfırdan Yeni Plan Hazırlama Modu Açık';
+                if (promptInput) promptInput.placeholder = 'Örn: 14 günlük plan var. 180 dk ayt mat, 120 dk geometri ve 60 dk tyt matematik olacak şekilde';
+            }
+        }
+
+        // AI STUDY COACH & DYNAMIC INSIGHTS ENGINE
+        function generateAICoachInsights() {
+            if (!activePlan || activePlan.length === 0) return;
+
+            const dayBadge = document.getElementById('aiCoachDayBadge');
+            const dailyEl = document.getElementById('aiCoachDailyAdvice');
+            const weeklyEl = document.getElementById('aiCoachWeeklyAdvice');
+            const retEl = document.getElementById('aiCoachRetentionAdvice');
+            const loadBadge = document.getElementById('aiCoachLoadBadge');
+
+            const activeDayData = activePlan.find(d => d.day === currentActiveDay) || activePlan[0];
+            if (dayBadge) dayBadge.innerText = `${activeDayData.day}. Gün (${activeDayData.totalMinutes} dk)`;
+
+            // 1. Daily Focus & Strategy for Active Day
+            const sessionCount = activeDayData.sessions.length;
+            const dayHours = (activeDayData.totalMinutes / 60).toFixed(1);
+            const dayTopics = activeDayData.sessions.map(s => s.topic).join(', ');
+            const newTopicCount = activeDayData.sessions.filter(s => s.stage === 'Yeni Konu').length;
+            const repCount = activeDayData.sessions.filter(s => (s.stage || '').includes('Tekrar')).length;
+
+            let dailyAdvice = `Bugün <strong>${dayHours} Saatlik (${activeDayData.totalMinutes} dk)</strong> çalışma programınızda <strong>${sessionCount} oturum</strong> planlandı. `;
+            if (newTopicCount > 0 && repCount > 0) {
+                dailyAdvice += `Programınızda hem yeni konu girişi (${newTopicCount} blok) hem de pekiştirme tekrarı (${repCount} blok) bulunuyor. Odaklanma sayacını <strong>50 dk ders + 10 dk mola</strong> şeklinde çalıştırarak zihinsel yorgunluğu önleyin.`;
+            } else if (newTopicCount > 0) {
+                dailyAdvice += `Bugün ağırlıklı olarak yeni kavram öğrenme günü. <em>${dayTopics || 'Dersler'}</em> konularının video anlatımlarını izledikten sonra hemen en az 30-40 temel düzey soru çözerek bilgiyi kalıcılaştırın.`;
+            } else {
+                dailyAdvice += `Bugün tam bir tekrar ve soru çözüm günü! Aralıklı tekrar (Spaced Repetition) sayesinde öğrenilen formülleri hafızaya kazıyacaksınız. Hatalı soruların çözümlerine mutlaka bakın.`;
+            }
+            if (dailyEl) dailyEl.innerHTML = dailyAdvice;
+
+            // 2. Weekly & Subject Balance Analysis
+            let totalAllMins = 0;
+            const subjectMins = {};
+            activePlan.forEach(d => {
+                d.sessions.forEach(s => {
+                    const key = (s.topic || 'Ders').split(' ')[0];
+                    subjectMins[key] = (subjectMins[key] || 0) + s.durationMinutes;
+                    totalAllMins += s.durationMinutes;
+                });
+            });
+
+            const totalDays = activePlan.length;
+            const avgDailyHours = totalAllMins > 0 ? ((totalAllMins / totalDays) / 60).toFixed(1) : 0;
+            
+            let weeklyAdvice = `Toplam <strong>${totalDays} günlük</strong> takviminizde günlük ortalama <strong>${avgDailyHours} saat</strong> çalışma planlanmış. `;
+            if (avgDailyHours > 12) {
+                weeklyAdvice += `<span class="text-amber-500 font-bold">⚠️ Yoğun Tempo:</span> Günlük süreler yüksek, uyku ve beslenmeye dikkat ederek haftada 1 yarım gün zihinsel dinlenme planlayabilirsiniz.`;
+            } else if (avgDailyHours >= 6) {
+                weeklyAdvice += `<span class="text-emerald-500 font-bold">✨ İdeal Sınav Temposu:</span> Ders dağılımı ve haftalık soru/konu dengesi YKS/ÖSYM standartlarına tam uyumludur.`;
+            } else {
+                weeklyAdvice += `<span class="text-indigo-400 font-bold">🚀 Rahat & İstikrarlı:</span> Hafif tempo; günlük 1-2 deneme veya ekstra soru bloğu ekleyerek ivmeyi artırabilirsiniz.`;
+            }
+            if (weeklyEl) weeklyEl.innerHTML = weeklyAdvice;
+
+            // 3. Spaced Repetition & Cognitive Load
+            if (avgDailyHours > 14) {
+                if (loadBadge) {
+                    loadBadge.innerText = 'Çok Yüksek';
+                    loadBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-bold';
+                }
+                if (retEl) retEl.innerHTML = `Bilişsel yük sınırı zorlanıyor. 14 saatin üzerindeki maratonlarda verim düşebilir; mola sürelerini 15 dakikaya çıkarmanız tavsiye edilir.`;
+            } else {
+                if (loadBadge) {
+                    loadBadge.innerText = 'Optimal Denge';
+                    loadBadge.className = 'text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold';
+                }
+                if (retEl) retEl.innerHTML = `3 günlük aralıklı tekrar döngüsü (Yeni ➔ 1. Tekrar ➔ 2. Tekrar) aktif. Ebbinghaus unutma eğrisine karşı %90'ın üzerinde bilgi kalıcılığı hedeflenmektedir.`;
+            }
+        }
+
+        // Prompt Preset Handler
+        function applyPromptPreset(presetId) {
+            const promptInput = document.getElementById('userPromptInput');
+            if (presetId === 1) {
+                promptInput.value = '14 günlük plan var. Dakka hesabı ile çalışma planı. 180 dk ayt mat. 60 dakka tyt ve 120 dk geometri olacak şekilde';
+                activePlan = JSON.parse(JSON.stringify(MASTER_14_DAYS_DATA));
+                applyCustomLinksToPlan(activePlan);
+                document.getElementById('planTitle').innerText = '📌 14 Günlük AYT Matematik, Geometri ve TYT Matematik Programı';
+                document.getElementById('planSubtitle').innerText = 'Toplam 14 Gün • Günlük 360 dk (6 Saat) • 180 dk AYT Mat + 120 dk Geometri + 60 dk TYT Mat';
+            } else if (presetId === 2) {
+                promptInput.value = 'günde 3 saat edebiyat ve 5 saat ayt matematik çalışacak şekilde günlük konu konu ders çalışma takvimi oluştur. Her konu için en az 2 saat çalışılacak. Her Konu ilk kez bitince tekrarı olacak. İkinci tekrardan sonra diğer konuya geçecek. Günün ders başlama saati 10, bitiş saati 22. Bu aralıkta 8 saat planlasın';
+                generatePlanFromGenericNLP(promptInput.value);
+            }
+            currentActiveDay = 1;
+            renderDaysTabBar();
+            renderActiveDay();
+            renderFullTable();
+            updateOverallProgress();
+            generateAICoachInsights();
+        }
+
+        // Helper to match session against subject, topic or timeSlot
+        function isSessionMatchingSubject(session, subObj, promptText) {
+            if (!session) return false;
+            const sTopic = (session.topic || '').toLowerCase();
+            const sSlot = (session.timeSlot || '').toLowerCase();
+            const p = (promptText || '').toLowerCase();
+            const subKey = (subObj && subObj.key ? subObj.key : '').toLowerCase();
+            const subName = (subObj && subObj.name ? subObj.name : '').toLowerCase();
+
+            // 1. Direct name / key in topic or slot
+            if (subName && (sTopic.includes(subName) || sSlot.includes(subName))) return true;
+            if (subKey && (sTopic.includes(subKey) || sSlot.includes(subKey))) return true;
+
+            // 2. Direct match of topic words in prompt
+            if (sTopic.length >= 3 && p.includes(sTopic)) return true;
+            const topicWords = sTopic.split(/\s+/);
+            if (topicWords.some(w => w.length >= 4 && p.includes(w))) return true;
+
+            // 3. Check curriculum topic lists
+            if (subKey && appCurriculum && appCurriculum[subKey] && appCurriculum[subKey].topics) {
+                const inList = appCurriculum[subKey].topics.some(t => {
+                    const tName = (t.name || '').toLowerCase();
+                    return sTopic.includes(tName) || tName.includes(sTopic);
+                });
+                if (inList) return true;
+            }
+
+            // 4. Common subject topic mappings
+            if (subKey === 'ayt_matematik' || p.includes('ayt')) {
+                if (sSlot.includes('ayt') || sTopic.includes('fonksiyon') || sTopic.includes('polinom') || 
+                    sTopic.includes('trigonometri') || sTopic.includes('parabol') || sTopic.includes('limit') || 
+                    sTopic.includes('türev') || sTopic.includes('integral') || sTopic.includes('logaritma') || 
+                    sTopic.includes('dizi') || sTopic.includes('karmaşık')) return true;
+            }
+            if (subKey === 'geometri' || p.includes('geo')) {
+                if (sSlot.includes('geo') || sTopic.includes('üçgen') || sTopic.includes('ucgen') || 
+                    sTopic.includes('açı') || sTopic.includes('dörtgen') || sTopic.includes('çember') || 
+                    sTopic.includes('analitik') || sTopic.includes('katı cisim') || sTopic.includes('vektör')) return true;
+            }
+            if (subKey === 'tyt_matematik' || p.includes('tyt')) {
+                if (sSlot.includes('tyt') || sTopic.includes('temel') || sTopic.includes('sayı') || 
+                    sTopic.includes('rasyonel') || sTopic.includes('problem') || sTopic.includes('ebob') || 
+                    sTopic.includes('oran') || sTopic.includes('üslü') || sTopic.includes('köklü') || 
+                    sTopic.includes('çarpanlara')) return true;
+            }
+            if (subKey === 'edebiyat' || p.includes('edeb') || p.includes('türkçe') || p.includes('turkce')) {
+                if (sSlot.includes('edeb') || sSlot.includes('türk') || sTopic.includes('tanzimat') || 
+                    sTopic.includes('divan') || sTopic.includes('şiir') || sTopic.includes('roman') || 
+                    sTopic.includes('paragraf') || sTopic.includes('yazım')) return true;
+            }
+            if (subKey === 'fizik' || p.includes('fizik')) {
+                if (sSlot.includes('fizik') || sTopic.includes('kuvvet') || sTopic.includes('hareket') || 
+                    sTopic.includes('enerji') || sTopic.includes('elektrik') || sTopic.includes('optik') || 
+                    sTopic.includes('dalga') || sTopic.includes('manyetizma')) return true;
+            }
+            if (subKey === 'kimya' || p.includes('kimya')) {
+                if (sSlot.includes('kimya') || sTopic.includes('atom') || sTopic.includes('periyodik') || 
+                    sTopic.includes('bağ') || sTopic.includes('gaz') || sTopic.includes('çözelti') || 
+                    sTopic.includes('organik') || sTopic.includes('asit')) return true;
+            }
+            if (subKey === 'biyoloji' || p.includes('biyo')) {
+                if (sSlot.includes('biyo') || sTopic.includes('hücre') || sTopic.includes('canlı') || 
+                    sTopic.includes('kalıtım') || sTopic.includes('ekoloji') || sTopic.includes('sistem') || 
+                    sTopic.includes('fotosentez')) return true;
+            }
+
+            return false;
+        }
+
+        // Universal AI Assistant & Knowledge Q&A Engine
+        function answerGeneralOrScheduleQuestion(promptText) {
+            const p = promptText.toLowerCase();
+
+            // 1. Specific Day Question (e.g. "3. gün ne var?", "bugün kaç saat ders var?")
+            const dayMatch = p.match(/(\d+)\s*\.?\s*(?:gün|gun)/i);
+            const targetDayNum = dayMatch ? parseInt(dayMatch[1]) : (p.includes('bugün') || p.includes('bugun') ? currentActiveDay : null);
+
+            if (targetDayNum !== null && targetDayNum >= 1 && targetDayNum <= activePlan.length) {
+                const dayData = activePlan.find(d => d.day === targetDayNum);
+                if (dayData) {
+                    const h = (dayData.totalMinutes / 60).toFixed(1);
+                    const sessList = dayData.sessions.map(s => {
+                        const slotInfo = s.timeSlot ? ' <em>[' + s.timeSlot + ']</em>' : '';
+                        return '• <strong>' + s.topic + '</strong> (' + s.durationMinutes + ' dk, ' + s.stage + ')' + slotInfo;
+                    }).join('<br>');
+                    showQuestionAnswerModal(`📅 ${targetDayNum}. Gün Program Detayı`, `
+                        <strong>${targetDayNum}. Gün</strong> için toplam <strong>${dayData.totalMinutes} dakika (${h} Saat)</strong> çalışma planlanmıştır (${dayData.timeRange}).<br><br>
+                        <strong>Ders Oturumları:</strong><br>${sessList || 'Bu gün için henüz ders oturumu eklenmemiş.'}<br><br>
+                        💡 <em>İpucu: Bu gün üzerinde değişiklik yapmak isterseniz "Bu güne X dersi ekle" veya "X konusunu çıkar" diyebilirsiniz.</em>
+                    `);
+                    return true;
+                }
+            }
+
+            // 2. Schedule Overall Summary Question (e.g. "toplam kaç saat?", "kaç gün kaldı?", "genel durum")
+            if (p.includes('toplam') || p.includes('genel') || p.includes('özet') || p.includes('kaç saat') || p.includes('kaç gün') || p.includes('kac gun')) {
+                let totalMins = 0;
+                let totalSessions = 0;
+                activePlan.forEach(d => {
+                    totalMins += d.totalMinutes;
+                    totalSessions += d.sessions.length;
+                });
+                const totalH = (totalMins / 60).toFixed(1);
+                const avgDaily = (totalH / activePlan.length).toFixed(1);
+                showQuestionAnswerModal(`📊 Aktif Takvim Genel Özeti`, `
+                    • <strong>Toplam Gün Sayısı:</strong> ${activePlan.length} Gün<br>
+                    • <strong>Toplam Oturum Sayısı:</strong> ${totalSessions} Blok<br>
+                    • <strong>Toplam Çalışma Süresi:</strong> ${totalMins} Dakika (~${totalH} Saat)<br>
+                    • <strong>Günlük Ortalama:</strong> ${avgDaily} Saat / Gün<br>
+                    • <strong>Günlük Maksimum Sınır:</strong> ${globalDailyLimit} Saat<br><br>
+                    💡 <em>Programınız 3 günlük aralıklı tekrar (Spaced Repetition) algoritmasıyla optimize edilmiştir.</em>
+                `);
+                return true;
+            }
+
+            // 3. Lesson & Topic Strategy Advice (e.g. "trigonometri nasıl çalışılır?", "geometri netleri nasıl artar?")
+            if (p.includes('trigonometri')) {
+                showQuestionAnswerModal(`📐 Trigonometri Çalışma Taktikleri`, `
+                    <strong>Trigonometride Başarıya Ulaşma Yolları:</strong><br>
+                    1. <strong>Birim Çember Mantığı:</strong> Formülleri ezberlemek yerine birim çember üzerinde sinüs, kosinüs, tanjant ve kotanjant eksenlerinin işaretlerini görselleştirin.<br>
+                    2. <strong>Toplam-Fark & Yarım Açı:</strong> Her gün en az 10 dakika bu formülleri boş bir kağıda kendiniz çıkararak yazın.<br>
+                    3. <strong>Soru Çözümü:</strong> Konuyu bitirdikten sonra en az 80-100 soru çözün; özellikle sadeleştirme ve trigonometrik denklem sorularına odaklanın.
+                `);
+                return true;
+            }
+            if (p.includes('geometri') || p.includes('üçgen')) {
+                showQuestionAnswerModal(`📐 Geometri Netlerini Artırma Stratejisi`, `
+                    <strong>Geometride "Görme" Becerisini Geliştirme:</strong><br>
+                    1. <strong>Üçgenler Her Şeydir:</strong> Geometrinin %70'i üçgen bilgisidir (Benzerlik, Özel Üçgenler, Alan). Üçgenler tam oturmadan dörtgenlere geçmeyin.<br>
+                    2. <strong>Ek Çizgi Çekme Refleksi:</strong> Sorularda paraleller, dikmeler ve orta taban çizgileri çekme alışkanlığı kazanın.<br>
+                    3. <strong>Günlük Soru Rutini:</strong> Geometride net artışının anahtarı her gün düzenli olarak en az 20-30 soru çözmektir.
+                `);
+                return true;
+            }
+            if (p.includes('ayt mat') || p.includes('matematik') || p.includes('türev') || p.includes('integral') || p.includes('fonksiyon') || p.includes('polinom')) {
+                showQuestionAnswerModal(`🔢 AYT Matematik Çalışma Rehberi`, `
+                    <strong>AYT Matematikte Yüksek Net Taktikleri:</strong><br>
+                    1. <strong>Fonksiyonlar Omurgadır:</strong> Polinom, Parabol, Trigonometri, Limit, Türev ve İntegral konularının tamamı Fonksiyon bilgisi üzerine kuruludur.<br>
+                    2. <strong>Konu ➔ Soru ➔ Tekrar Döngüsü:</strong> Bir konuyu bitirdikten 3 gün sonra mutlaka 1. Tekrar (en az 30 soru) yapın.<br>
+                    3. <strong>Çıkmış Sorular:</strong> Son 5 yılın ÖSYM AYT Matematik çıkmış sorularını mutlaka süre tutarak analiz edin.
+                `);
+                return true;
+            }
+            if (p.includes('edebiyat') || p.includes('türkçe') || p.includes('tanzimat') || p.includes('divan') || p.includes('paragraf')) {
+                showQuestionAnswerModal(`📚 AYT Edebiyat & Türkçe Ezber Taktikleri`, `
+                    <strong>Edebiyatı Kalıcı Hale Getirme Yöntemleri:</strong><br>
+                    1. <strong>Yazar-Eser Hafıza Kartları:</strong> Flashcard yöntemiyle yazarları, dönemlerini ve baş eserlerini günde 15 dakika tekrar edin.<br>
+                    2. <strong>Dönem Özellikleri:</strong> Divan, Tanzimat, Servet-i Fünun ve Cumhuriyet dönemlerinin anahtar kavramlarını karşılaştırmalı tablo yapın.<br>
+                    3. <strong>Günlük 20 Paragraf:</strong> Hem TYT hem AYT başarısı için sabahları 20 paragraf sorusu çözmeyi alışkanlık haline getirin.
+                `);
+                return true;
+            }
+            if (p.includes('pomodoro') || p.includes('mola') || p.includes('verim') || p.includes('tavsiye') || p.includes('koç') || p.includes('motivasyon')) {
+                showQuestionAnswerModal(`⚡ Akıllı Çalışma & Verimlilik Rehberi`, `
+                    <strong>YKS Çalışma Koçu Tavsiyeleri:</strong><br>
+                    1. <strong>50/10 Kuralı:</strong> 50 dakika kesintisiz odaklanma + 10 dakika mavi ışıksız mola zihni dinç tutar.<br>
+                    2. <strong>Bilişsel Yük Dengesi:</strong> Aynı gün içine üst üste iki ağır sayısal ders yerine, sayısal + sözel/geometri dengesi kurun.<br>
+                    3. <strong>Hata Defteri:</strong> Denemelerde yanlış yaptığınız her soruyu kesip veya kaydedip haftada 1 kez tekrar çözün.
+                `);
+                return true;
+            }
+
+            // General Subject status from curriculum
+            let matchedSubName = null;
+            for (const sub of Object.values(appCurriculum)) {
+                if (p.includes((sub.name || '').toLowerCase())) {
+                    matchedSubName = sub.name;
+                    break;
+                }
+            }
+            if (matchedSubName) {
+                let subMins = 0;
+                let subCount = 0;
+                activePlan.forEach(d => {
+                    d.sessions.forEach(s => {
+                        if (isSessionMatchingSubject(s, { name: matchedSubName }, p)) {
+                            subMins += s.durationMinutes;
+                            subCount++;
+                        }
+                    });
+                });
+                const subH = (subMins / 60).toFixed(1);
+                showQuestionAnswerModal(`📚 ${matchedSubName} Ders Durumu`, `
+                    Takviminizde <strong>${matchedSubName}</strong> dersine toplam <strong>${subCount} oturum</strong> ve <strong>${subMins} dakika (${subH} saat)</strong> ayrılmıştır.<br><br>
+                    💡 <em>Bu derse yeni oturum eklemek için "3. güne 1 saat ${matchedSubName} ekle" veya süresini değiştirmek için "${matchedSubName} 90 dk olsun" diyebilirsiniz.</em>
+                `);
+                return true;
+            }
+
+            // Fallback general guidance
+            const activeDayData = activePlan.find(d => d.day === currentActiveDay) || activePlan[0];
+            const h = (activeDayData.totalMinutes / 60).toFixed(1);
+            showQuestionAnswerModal(`🤖 YKS Yapay Zeka Asistanı`, `
+                İsteğinizi analiz ettim. Seçili olan <strong>${activeDayData.day}. Gün</strong> için toplam <strong>${activeDayData.totalMinutes} dk (${h} Saat)</strong> çalışma mevcuttur.<br><br>
+                <strong>Sorabileceğiniz Bazı Örnekler:</strong><br>
+                • <em>"Bugün toplam kaç saat ders var?"</em><br>
+                • <em>"3. güne 1 saat geometri ekle"</em><br>
+                • <em>"2. günden TYT matematiği çıkar"</em><br>
+                • <em>"Trigonometriye nasıl çalışmalıyım?"</em><br>
+                • <em>"Geometri netleri nasıl artar?"</em>
+            `);
+            return true;
+        }
+
+        function showQuestionAnswerModal(title, contentHtml) {
+            const modal = document.getElementById('planChangeConfirmModal');
+            const head = modal ? modal.querySelector('h4') : null;
+            const container = document.getElementById('planChangePreviewContainer');
+            const applyBtn = document.querySelector('button[onclick="applyPendingPlanChange()"]');
+            const freshBtn = document.querySelector('button[onclick="applyFreshPlanInstead()"]');
+
+            if (head) head.innerText = title;
+            if (container) {
+                container.innerHTML = `
+                    <div class="p-4 rounded-xl border bg-indigo-500/10 border-indigo-500/30 text-xs leading-relaxed space-y-2" style="color: var(--text-main)">
+                        ${contentHtml}
+                    </div>
+                `;
+            }
+            if (applyBtn) applyBtn.style.display = 'none';
+            if (freshBtn) freshBtn.style.display = 'none';
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        // NLP INCREMENTAL MODIFICATION & ACTIVE PLAN EDIT CONFIRMATION
+        let pendingChangeAction = null;
+
+        function detectIncrementalModification(promptText) {
+            let p = promptText.toLowerCase();
+            p = p.replace(/([a-zçğıöşü])(\d)/gi, '$1 $2').replace(/(\d)([a-zçğıöşü])/gi, '$1 $2');
+            
+            // Check if prompt contains modification action words
+            const isAdd = /\b(ekle|ilave|koy|yaz|dahil\s*et)\b/i.test(p);
+            const isRemove = /\b(çıkar|cikar|kaldır|kaldir|sil|iptal|at)\b/i.test(p);
+            const isUpdate = /\b(yap|güncelle|guncelle|değiştir|degistir|ayarla|olsun|yerine)\b/i.test(p);
+            
+            if (currentNlpMode === 'fresh') return null;
+            if (!isAdd && !isRemove && !isUpdate && currentNlpMode !== 'active') return null;
+            
+            // If it is asking a question (contains '?' or question words and not an explicit modify action)
+            if ((p.includes('?') || /\b(kaç|kac|ne|nasıl|nasil|hangi|nerede)\b/i.test(p)) && !isAdd && !isRemove) {
+                return null;
+            }
+
+            // Extract target days
+            let targetDays = [];
+            const dayMatches = [...p.matchAll(/(\d+)\s*\.?\s*(?:gün|gun)/gi)];
+            if (dayMatches.length > 0) {
+                dayMatches.forEach(m => {
+                    const d = parseInt(m[1]);
+                    if (d >= 1 && d <= activePlan.length && !targetDays.includes(d)) {
+                        targetDays.push(d);
+                    }
+                });
+            }
+            
+            if (targetDays.length === 0) {
+                if (/\b(tüm|tum|her|bütün|butun)\s*(?:gün|gun)/i.test(p) || /\b(aktif\s*program|programa|takvime)\b/i.test(p)) {
+                    targetDays = activePlan.map(d => d.day);
+                } else {
+                    targetDays = [currentActiveDay];
+                }
+            }
+            
+            // Extract subject
+            let matchedSubject = null;
+            for (const [key, sub] of Object.entries(appCurriculum)) {
+                const subName = (sub.name || key).toLowerCase();
+                if (p.includes(subName) || p.includes(key.toLowerCase())) {
+                    matchedSubject = { key: key, name: sub.name, topics: sub.topics || [] };
+                    break;
+                }
+            }
+            if (!matchedSubject) {
+                if (p.includes('ayt mat') || p.includes('ayt') || p.includes('fonksiyon') || p.includes('polinom') || p.includes('trigonometri')) {
+                    matchedSubject = { key: 'ayt_matematik', name: 'AYT Matematik', topics: (appCurriculum.ayt_matematik && appCurriculum.ayt_matematik.topics) || [] };
+                } else if (p.includes('tyt mat') || p.includes('tyt') || p.includes('temel mat') || p.includes('problem')) {
+                    matchedSubject = { key: 'tyt_matematik', name: 'TYT Matematik', topics: (appCurriculum.tyt_matematik && appCurriculum.tyt_matematik.topics) || [] };
+                } else if (p.includes('geo') || p.includes('üçgen') || p.includes('ucgen')) {
+                    matchedSubject = { key: 'geometri', name: 'Geometri', topics: (appCurriculum.geometri && appCurriculum.geometri.topics) || [] };
+                } else if (p.includes('edebiyat') || p.includes('türkçe') || p.includes('turkce') || p.includes('paragraf')) {
+                    matchedSubject = { key: 'edebiyat', name: 'Edebiyat', topics: (appCurriculum.edebiyat && appCurriculum.edebiyat.topics) || [] };
+                } else if (p.includes('fizik')) {
+                    matchedSubject = { key: 'fizik', name: 'Fizik', topics: (appCurriculum.fizik && appCurriculum.fizik.topics) || [] };
+                } else if (p.includes('kimya')) {
+                    matchedSubject = { key: 'kimya', name: 'Kimya', topics: (appCurriculum.kimya && appCurriculum.kimya.topics) || [] };
+                } else if (p.includes('biyo')) {
+                    matchedSubject = { key: 'biyoloji', name: 'Biyoloji', topics: (appCurriculum.biyoloji && appCurriculum.biyoloji.topics) || [] };
+                } else if (p.includes('tarih')) {
+                    matchedSubject = { key: 'tarih', name: 'Tarih', topics: (appCurriculum.tarih && appCurriculum.tarih.topics) || [] };
+                } else if (p.includes('cografya') || p.includes('coğrafya')) {
+                    matchedSubject = { key: 'cografya', name: 'Coğrafya', topics: (appCurriculum.cografya && appCurriculum.cografya.topics) || [] };
+                }
+            }
+            
+            // Extract duration
+            let durationMinutes = 60;
+            const durMatch = p.match(/(\d+(?:[.,]\d+)?)\s*(saat|sa|s|dakika|dakka|dk)\b/i);
+            if (durMatch) {
+                const val = parseFloat(durMatch[1].replace(',', '.'));
+                const unit = durMatch[2].toLowerCase();
+                durationMinutes = (unit.startsWith('s')) ? Math.round(val * 60) : Math.round(val);
+            }
+            
+            const actionType = isRemove ? 'remove' : (isUpdate ? 'update' : 'add');
+            
+            return {
+                action: actionType,
+                targetDays: targetDays,
+                subject: matchedSubject || { key: 'genel', name: 'Ders / Konu', topics: [] },
+                durationMinutes: durationMinutes,
+                rawPrompt: promptText
+            };
+        }
+
+        function promptPlanChangeConfirmation(modAction) {
+            pendingChangeAction = modAction;
+            const container = document.getElementById('planChangePreviewContainer');
+            const head = document.getElementById('planChangeConfirmModal').querySelector('h4');
+            const applyBtn = document.querySelector('button[onclick="applyPendingPlanChange()"]');
+            const freshBtn = document.querySelector('button[onclick="applyFreshPlanInstead()"]');
+
+            if (head) head.innerText = 'Aktif Program Güncellensin mi?';
+            if (applyBtn) applyBtn.style.display = '';
+            if (freshBtn) freshBtn.style.display = '';
+            if (!container) return;
+            
+            const daysLabel = modAction.targetDays.length === activePlan.length 
+                ? 'Tüm Günler' 
+                : `${modAction.targetDays.join(', ')}. Gün(ler)`;
+            
+            let icon = '➕';
+            let badgeColor = 'bg-indigo-500/15 border-indigo-500/30';
+            let actionDesc = '';
+            
+            if (modAction.action === 'add') {
+                icon = '➕';
+                badgeColor = 'bg-indigo-500/15 border-indigo-500/30';
+                actionDesc = `<strong>${daysLabel}</strong> için <strong>${modAction.subject.name}</strong> (${modAction.durationMinutes} dk / ${(modAction.durationMinutes/60).toFixed(1)} sa) ders oturumu eklenecek.`;
+            } else if (modAction.action === 'remove') {
+                icon = '➖';
+                badgeColor = 'bg-rose-500/15 border-rose-500/30 text-rose-400';
+                actionDesc = `<strong>${daysLabel}</strong> içinden <strong>${modAction.subject.name}</strong> oturumu tamamen kaldırılacak.`;
+            } else {
+                icon = '🔄';
+                badgeColor = 'bg-amber-500/15 border-amber-500/30 text-amber-400';
+                actionDesc = `<strong>${daysLabel}</strong> için <strong>${modAction.subject.name}</strong> oturum süresi <strong>${modAction.durationMinutes} dk (${(modAction.durationMinutes/60).toFixed(1)} sa)</strong> olarak güncellenecek.`;
+            }
+            
+            container.innerHTML = `
+                <div class="flex items-start gap-3 p-3.5 rounded-xl border ${badgeColor}">
+                    <span class="text-xl shrink-0">${icon}</span>
+                    <div class="text-xs leading-relaxed" style="color: var(--text-main)">
+                        ${actionDesc}
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('planChangeConfirmModal').classList.remove('hidden');
+        }
+
+        function closePlanChangeConfirmModal() {
+            const modal = document.getElementById('planChangeConfirmModal');
+            if (modal) modal.classList.add('hidden');
+            pendingChangeAction = null;
+            const applyBtn = document.querySelector('button[onclick="applyPendingPlanChange()"]');
+            const freshBtn = document.querySelector('button[onclick="applyFreshPlanInstead()"]');
+            if (applyBtn) applyBtn.style.display = '';
+            if (freshBtn) freshBtn.style.display = '';
+        }
+
+        function applyPendingPlanChange() {
+            if (!pendingChangeAction) return;
+            const act = pendingChangeAction;
+            let totalAffected = 0;
+            
+            act.targetDays.forEach(dayNum => {
+                const dayData = activePlan.find(d => d.day === dayNum);
+                if (!dayData) return;
+                
+                if (act.action === 'add') {
+                    const topicObj = (act.subject.topics && act.subject.topics.length > 0) 
+                        ? act.subject.topics[Math.floor(Math.random() * act.subject.topics.length)] 
+                        : { name: act.subject.name + ' Temel Konu', video_url: '' };
+                    
+                    dayData.sessions.push({
+                        id: `d${dayNum}_s${Date.now()}_${Math.floor(Math.random()*1000)}`,
+                        topic: topicObj.name,
+                        videoUrl: getTopicVideoUrl(topicObj.name, topicObj.video_url || ''),
+                        stage: 'Özel Çalışma',
+                        stageBadge: 'stage-new',
+                        durationMinutes: act.durationMinutes,
+                        timeSlot: ''
+                    });
+                    totalAffected++;
+                } else if (act.action === 'remove') {
+                    const beforeLen = dayData.sessions.length;
+                    dayData.sessions = dayData.sessions.filter(s => !isSessionMatchingSubject(s, act.subject, act.rawPrompt));
+                    if (dayData.sessions.length < beforeLen) totalAffected++;
+                } else if (act.action === 'update') {
+                    let found = false;
+                    dayData.sessions.forEach(s => {
+                        if (isSessionMatchingSubject(s, act.subject, act.rawPrompt)) {
+                            s.durationMinutes = act.durationMinutes;
+                            found = true;
+                            totalAffected++;
+                        }
+                    });
+                    if (!found && dayData.sessions.length > 0) {
+                        dayData.sessions[0].durationMinutes = act.durationMinutes;
+                        totalAffected++;
+                    }
+                }
+                recalculateDaySchedule(dayNum);
+            });
+            
+            closePlanChangeConfirmModal();
+            generateAICoachInsights();
+            if (act.action === 'remove') {
+                showToast(`Seçili gün(ler)den "${act.subject.name}" oturumu kaldırıldı.`, 'info', '🗑️ Oturum Silindi');
+            } else if (act.action === 'update') {
+                showToast(`Seçili gün(ler)de "${act.subject.name}" süresi ${act.durationMinutes} dk olarak güncellendi.`, 'success', '✏️ Süre Güncellendi');
+            } else {
+                showToast(`Seçili gün(ler)e "${act.subject.name}" (${act.durationMinutes} dk) eklendi.`, 'success', '➕ Oturum Eklendi');
+            }
+        }
+
+        function applyFreshPlanInstead() {
+            if (!pendingChangeAction) return;
+            const raw = pendingChangeAction.rawPrompt;
+            closePlanChangeConfirmModal();
+            generatePlanFromGenericNLP(raw);
+        }
+
+        // Ask General or QA question to Local LLM
+        async function askLocalLLMGeneralQuestion(questionText) {
+            const activePlanSummary = activePlan.map(d => `${d.day}. Gün (${d.totalMinutes} dk, ${d.timeRange}): ` + d.sessions.map(s => `${s.topic} (${s.durationMinutes} dk)`).join(', ')).join('\n');
+            const systemPrompt = `Sen bir YKS ve ders çalışma uzmanısın. Kullanıcının aktif çalışma takvimi ve parametreleri şudur:\n${activePlanSummary}\n\nKullanıcının dersler, sınav taktikleri veya aktif takvim hakkındaki sorusuna samimi, net, maddeler halinde ve motive edici Türkçe bir yanıt ver.`;
+
+            let payload;
+            if (llmConfig.provider === 'ollama') {
+                payload = {
+                    model: llmConfig.model,
+                    prompt: systemPrompt + '\n\nKullanıcı Sorusu: ' + questionText + '\n\nCevap:',
+                    stream: false
+                };
+            } else {
+                payload = {
+                    model: llmConfig.model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: questionText }
+                    ],
+                    temperature: 0.3
+                };
+            }
+
+            const res = await fetch(llmConfig.endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error('LLM HTTP ' + res.status);
+            const data = await res.json();
+            const reply = (data.response || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
+            if (reply) {
+                showQuestionAnswerModal('🧠 Yapay Zeka Koçu (' + llmConfig.model + ') Yanıtı', reply.replace(/\n/g, '<br>'));
+                return true;
+            }
+            return false;
+        }
+
+        // MASTER GENERIC NLP & LOCAL LLM PLANNER
+        async function parseAndGenerateFromPrompt() {
+            const rawPrompt = document.getElementById('userPromptInput').value.trim();
+            if (!rawPrompt) {
+                showToast('Lütfen çalışma isteğinizi veya sorunuzu yazın.', 'warning', 'Eksik İstek');
+                return;
+            }
+
+            const btn = document.getElementById('submitPromptBtn');
+            const origText = btn ? btn.innerHTML : '🚀 Planı Hesapla ve Uygula';
+            if (btn) btn.innerHTML = '⏳ İşleniyor...';
+
+            // Check if this is an incremental modification in 'active' mode
+            if (currentNlpMode === 'active') {
+                const modAction = detectIncrementalModification(rawPrompt);
+                if (modAction) {
+                    if (btn) btn.innerHTML = origText;
+                    promptPlanChangeConfirmation(modAction);
+                    return;
+                }
+            }
+
+            // If question/advice asked:
+            const p = rawPrompt.toLowerCase();
+            const isQuestionOrAdvice = p.includes('?') || 
+                                       /\b(kaç|kac|ne|nasıl|nasil|hangi|nerede|tavsiye|rehber|öğüt|ogut|koç|koc|durum|özet|ozet|analiz)\b/i.test(p);
+            
+            if (isQuestionOrAdvice) {
+                if (llmConfig.isActive) {
+                    try {
+                        const ansOk = await askLocalLLMGeneralQuestion(rawPrompt);
+                        if (ansOk) {
+                            if (btn) btn.innerHTML = origText;
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn('LLM QA error, fallback to knowledge base:', e);
+                    }
+                }
+                answerGeneralOrScheduleQuestion(rawPrompt);
+                if (btn) btn.innerHTML = origText;
+                return;
+            }
+
+            // If Local LLM is active and in fresh plan mode
+            if (llmConfig.isActive && currentNlpMode === 'fresh') {
+                try {
+                    const success = await generatePlanFromLocalLLM(rawPrompt);
+                    if (success) {
+                        if (btn) btn.innerHTML = origText;
+                        generateAICoachInsights();
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('Local LLM call failed, falling back to NLP rule parser:', e);
+                }
+            }
+
+            // If in active mode and user types something without explicit question/modify, answer via Q&A assistant
+            if (currentNlpMode === 'active') {
+                answerGeneralOrScheduleQuestion(rawPrompt);
+                if (btn) btn.innerHTML = origText;
+                return;
+            }
+
+            // Fresh generation mode
+            generatePlanFromGenericNLP(rawPrompt);
+            if (btn) btn.innerHTML = origText;
+            generateAICoachInsights();
+        }
+
+        // Generic NLP & Algorithmic Parser with Parametric Per-Day Limits
+        function generatePlanFromGenericNLP(promptText) {
+            let p = promptText.toLowerCase();
+
+            // 1. Normalize spaces between words and numbers (e.g. "matematik3" -> "matematik 3", "3saat" -> "3 saat", "180dk" -> "180 dk")
+            p = p.replace(/([a-zçğıöşü])(\d)/gi, '$1 $2');
+            p = p.replace(/(\d)([a-zçğıöşü])/gi, '$1 $2');
+
+            // 2. Normalize typos & common spelling variations
+            p = p.replace(/\bgeomet[a-zçğıöşü]*\b/g, 'geometri');
+            p = p.replace(/\bedeb[a-zçğıöşü]*\b/g, 'edebiyat');
+            p = p.replace(/\bmatemat[a-zçğıöşü]*\b/g, 'matematik');
+            p = p.replace(/\bturkc[a-zçğıöşü]*\b/g, 'turkce');
+            p = p.replace(/\btürkç[a-zçğıöşü]*\b/g, 'türkçe');
+            p = p.replace(/\bfiz[a-zçğıöşü]*\b/g, 'fizik');
+            p = p.replace(/\bkim[a-zçğıöşü]*\b/g, 'kimya');
+            p = p.replace(/\bbiyo[a-zçğıöşü]*\b/g, 'biyoloji');
+
+            // 3. Detect Total Days (default 14)
+            let totalDays = 14;
+            const daysMatch = p.match(/(\d+)\s*(günlük|gunluk|gün|gun)/i);
+            if (daysMatch) {
+                totalDays = Math.min(60, Math.max(1, parseInt(daysMatch[1])));
+            }
+
+            // 4. Extract Global Daily Limit from Prompt if specified (e.g. "günde 8 saat", "günlük maksimum 10 saat")
+            const promptDailyLimitMatch = p.match(/günde\s*(?:en fazla|maksimum)?\s*(\d+(?:[.,]\d+)?)\s*(?:saat|sa|s)\b/i) || 
+                                          p.match(/günlük\s*(?:en fazla|maksimum)?\s*(\d+(?:[.,]\d+)?)\s*(?:saat|sa|s)\b/i);
+            if (promptDailyLimitMatch) {
+                const parsedL = parseFloat(promptDailyLimitMatch[1].replace(',', '.'));
+                if (parsedL >= 1 && parsedL <= 24) {
+                    setGlobalDailyLimit(parsedL);
+                }
+            }
+
+            // 5. Subject definitions and patterns (Base + Custom categories)
+            const baseSubjectsDef = [
+                { key: 'ayt_matematik', name: 'AYT Matematik', patterns: ['ayt\\s*matematik', 'ayt\\s*mat', 'mat\\s*2', 'ayt'] },
+                { key: 'tyt_matematik', name: 'TYT Matematik', patterns: ['tyt\\s*matematik', 'tyt\\s*mat', 'temel\\s*mat', 'tyt'] },
+                { key: 'geometri', name: 'Geometri', patterns: ['geometri', 'geo'] },
+                { key: 'edebiyat', name: 'Edebiyat', patterns: ['edebiyat', 'türkçe', 'turkce'] },
+                { key: 'fizik', name: 'Fizik', patterns: ['fizik'] },
+                { key: 'kimya', name: 'Kimya', patterns: ['kimya'] },
+                { key: 'biyoloji', name: 'Biyoloji', patterns: ['biyoloji', 'biyo'] },
+                { key: 'tarih', name: 'Tarih', patterns: ['tarih'] },
+                { key: 'cografya', name: 'Coğrafya', patterns: ['coğrafya', 'cografya'] }
+            ];
+
+            const subjectsDef = [...baseSubjectsDef];
+            // Dynamically register custom categories from appCurriculum
+            if (typeof appCurriculum === 'object' && appCurriculum !== null) {
+                Object.keys(appCurriculum).forEach(catKey => {
+                    if (!subjectsDef.some(s => s.key === catKey)) {
+                        const catObj = appCurriculum[catKey];
+                        const titleClean = (catObj.title || catKey).toLowerCase();
+                        const patterns = [titleClean];
+                        const words = titleClean.split(/\s+/);
+                        words.forEach(w => {
+                            if (w.length >= 3 && !patterns.includes(w)) patterns.push(w);
+                        });
+                        subjectsDef.push({
+                            key: catKey,
+                            name: catObj.title || catKey,
+                            patterns: patterns
+                        });
+                    }
+                });
+            }
+
+            // Find all subject occurrences in the text with positions
+            const foundSubjects = [];
+            subjectsDef.forEach(sub => {
+                sub.patterns.forEach(pat => {
+                    try {
+                        const regex = new RegExp('\\b' + pat + '\\b', 'gi');
+                        let match;
+                        while ((match = regex.exec(p)) !== null) {
+                            const start = match.index;
+                            const end = start + match[0].length;
+                            // Avoid overlapping matches
+                            const overlap = foundSubjects.some(fs => !(end <= fs.start || start >= fs.end));
+                            if (!overlap) {
+                                foundSubjects.push({
+                                    key: sub.key,
+                                    name: sub.name,
+                                    start: start,
+                                    end: end,
+                                    minutes: 0
+                                    });
+                            }
+                        }
+                    } catch (e) {
+                        // skip invalid regex pattern safely
+                    }
+                });
+            });
+
+            // Sort subjects by appearance order
+            foundSubjects.sort((a, b) => a.start - b.start);
+
+            // Find all duration occurrences in the text (e.g., "3 saat", "180 dk", "1.5 sa", "45 dakika")
+            const durationMatches = [];
+            const durRegex = /(\d+(?:[.,]\d+)?)\s*(saat|sa|s|dakika|dakka|dk)\b/gi;
+            let durMatch;
+            while ((durMatch = durRegex.exec(p)) !== null) {
+                const val = parseFloat(durMatch[1].replace(',', '.'));
+                const unit = durMatch[2].toLowerCase();
+                const mins = (unit === 'saat' || unit === 'sa' || unit === 's') ? Math.round(val * 60) : Math.round(val);
+                durationMatches.push({
+                    minutes: mins,
+                    start: durMatch.index,
+                    end: durMatch.index + durMatch[0].length,
+                    used: false
+                });
+            }
+
+            // Match each subject to the nearest unused duration
+            foundSubjects.forEach(subj => {
+                let bestDur = null;
+                let minDist = 999999;
+                durationMatches.forEach(dur => {
+                    if (dur.used) return;
+                    let dist;
+                    if (dur.end <= subj.start) {
+                        dist = subj.start - dur.end;
+                    } else if (dur.start >= subj.end) {
+                        dist = dur.start - subj.end;
+                    } else {
+                        dist = 0;
+                    }
+                    if (dist < minDist) {
+                        minDist = dist;
+                        bestDur = dur;
+                    }
+                });
+
+                if (bestDur && minDist < 45) {
+                    subj.minutes = bestDur.minutes;
+                    bestDur.used = true;
+                }
+            });
+
+            // Deduplicate subjects by key
+            const uniqueSubsMap = {};
+            foundSubjects.forEach(s => {
+                if (!uniqueSubsMap[s.key] || (uniqueSubsMap[s.key].minutes === 0 && s.minutes > 0)) {
+                    uniqueSubsMap[s.key] = s;
+                }
+            });
+
+            let detectedSubjects = Object.values(uniqueSubsMap);
+
+            // If no specific subject detected, default to standard AYT + Geo + TYT
+            if (detectedSubjects.length === 0) {
+                detectedSubjects = [
+                    { key: 'ayt_matematik', name: 'AYT Matematik', minutes: 180 },
+                    { key: 'geometri', name: 'Geometri', minutes: 120 },
+                    { key: 'tyt_matematik', name: 'TYT Matematik', minutes: 60 }
+                ];
+            }
+
+            // Assign topics from appCurriculum or CURRICULUM
+            detectedSubjects.forEach(sub => {
+                const curSource = (appCurriculum && appCurriculum[sub.key]) || (CURRICULUM && CURRICULUM[sub.key]);
+                if (curSource && curSource.topics && curSource.topics.length > 0) {
+                    sub.topics = curSource.topics;
+                } else {
+                    sub.topics = [
+                        { name: sub.name + ' Temel Konu', video_url: '' }
+                    ];
+                }
+            });
+
+            // Resolve any remaining missing minutes
+            let totalDailyHours = 0;
+            const totalHoursMatch = p.match(/(\d+)\s*(saat|sa)\s*(planlasın|calis|çalış|toplam)/i) || p.match(/günde\s*(\d+)\s*saat/i);
+            if (totalHoursMatch) {
+                totalDailyHours = parseInt(totalHoursMatch[1]);
+            }
+
+            const unassigned = detectedSubjects.filter(s => s.minutes === 0);
+            if (unassigned.length > 0) {
+                let assignedMins = detectedSubjects.filter(s => s.minutes > 0).reduce((acc, s) => acc + s.minutes, 0);
+                let remainingMins = (totalDailyHours > 0 ? (totalDailyHours * 60) : (detectedSubjects.length * 120)) - assignedMins;
+                if (remainingMins <= 0) remainingMins = unassigned.length * 120;
+
+                const perSub = Math.round(remainingMins / unassigned.length);
+                unassigned.forEach(s => s.minutes = perSub);
+            }
+
+            // 6. Start and End Times
+            let startHour = 10;
+            let endHour = 22;
+            const startMatch = p.match(/başlama\s*saati\s*(\d+)|baslama\s*saati\s*(\d+)/i);
+            if (startMatch) startHour = parseInt(startMatch[1] || startMatch[2]);
+            const endMatch = p.match(/bitiş\s*saati\s*(\d+)|bitis\s*saati\s*(\d+)/i);
+            if (endMatch) endHour = parseInt(endMatch[1] || endMatch[2]);
+
+            const breakMinutes = 20;
+
+            // 7. Spaced Repetition Rule
+            // 3-day cycle: Day 1: Yeni, Day 2: 1. Tekrar, Day 3: 2. Tekrar
+            let cycleLength = 3;
+            if (p.includes('her gün yeni') || p.includes('tekrar olmadan')) {
+                cycleLength = 1;
+            } else if (p.includes('1 tekrar') || p.includes('bir tekrar')) {
+                cycleLength = 2;
+            }
+
+            // 8. Build Generic Plan (with Global Daily Limit Scaling)
+            const newPlan = [];
+            let totalPlanScaled = false;
+            const dayMaxMinutes = Math.min(24 * 60, Math.max(60, Math.round(globalDailyLimit * 60)));
+            const baseRequestedDayMinutes = detectedSubjects.reduce((acc, s) => acc + s.minutes, 0);
+            const originalRequestedSubjects = detectedSubjects.map(s => ({ ...s }));
+
+            if (baseRequestedDayMinutes > dayMaxMinutes) {
+                totalPlanScaled = true;
+                const scaleFactor = dayMaxMinutes / baseRequestedDayMinutes;
+                detectedSubjects.forEach(s => {
+                    s.minutes = Math.max(15, Math.round((s.minutes * scaleFactor) / 5) * 5);
+                });
+            }
+
+            const actualDayTotalMinutes = detectedSubjects.reduce((acc, s) => acc + s.minutes, 0);
+
+            for (let day = 1; day <= totalDays; day++) {
+                const dayIdx = day - 1;
+                const sessions = [];
+                let currentMinutesFromStart = startHour * 60;
+
+                detectedSubjects.forEach((sub, sIdx) => {
+                    const topicIdx = Math.floor(dayIdx / cycleLength) % sub.topics.length;
+                    const cycleDay = dayIdx % cycleLength;
+                    const topicObj = sub.topics[topicIdx];
+
+                    let stage = 'Yeni Konu';
+                    let stageBadge = 'stage-new';
+
+                    if (cycleLength > 1) {
+                        if (cycleDay === 0) {
+                            stage = 'Yeni Konu';
+                            stageBadge = 'stage-new';
+                        } else if (cycleDay === 1) {
+                            stage = '1. Tekrar';
+                            stageBadge = 'stage-rep1';
+                        } else {
+                            stage = '2. Tekrar';
+                            stageBadge = 'stage-rep2';
+                        }
+                    }
+
+                    // Calculate time slot string
+                    const startSlotH = Math.floor(currentMinutesFromStart / 60);
+                    const startSlotM = currentMinutesFromStart % 60;
+                    currentMinutesFromStart += sub.minutes;
+                    const endSlotH = Math.floor(currentMinutesFromStart / 60);
+                    const endSlotM = currentMinutesFromStart % 60;
+
+                    const timeSlotStr = String(startSlotH).padStart(2, '0') + ':' + String(startSlotM).padStart(2, '0') + ' - ' + 
+                                       String(endSlotH).padStart(2, '0') + ':' + String(endSlotM).padStart(2, '0') + ' (' + sub.name + ')';
+
+                    // Add 20 min break for next slot
+                    currentMinutesFromStart += breakMinutes;
+
+                    sessions.push({
+                        id: 'd' + day + '_s' + (sIdx + 1),
+                        topic: topicObj.name,
+                        videoUrl: getTopicVideoUrl(topicObj.name, topicObj.video_url || ('https://youtube.com/results?search_query=' + encodeURIComponent(topicObj.name + ' ders anlatımı'))),
+                        stage: stage,
+                        stageBadge: stageBadge,
+                        durationMinutes: sub.minutes,
+                        timeSlot: timeSlotStr
+                    });
+                });
+
+                const startFormat = String(startHour).padStart(2, '0') + ':00';
+                const lastEndH = Math.floor((currentMinutesFromStart - breakMinutes) / 60);
+                const lastEndM = (currentMinutesFromStart - breakMinutes) % 60;
+                const endFormat = String(lastEndH).padStart(2, '0') + ':' + String(lastEndM).padStart(2, '0');
+
+                newPlan.push({
+                    day: day,
+                    title: day + '. Gün Çalışma Planı',
+                    totalMinutes: actualDayTotalMinutes,
+                    timeRange: startFormat + ' - ' + endFormat,
+                    sessions: sessions
+                });
+            }
+
+            activePlan = newPlan;
+            currentActiveDay = 1;
+
+            const subNames = detectedSubjects.map(s => s.name + ' (' + s.minutes + ' dk)').join(' + ');
+            document.getElementById('planTitle').innerText = '📌 ' + totalDays + ' Günlük Özel Çalışma Takvimi';
+            document.getElementById('planSubtitle').innerText = 'Toplam ' + totalDays + ' Gün • ' + detectedSubjects.length + ' Ders • ' + subNames;
+
+            // Suggestion Banner Handling
+            const suggestionBanner = document.getElementById('aiSuggestionBanner');
+            const suggestionHeading = document.getElementById('aiSuggestionHeading');
+            const suggestionText = document.getElementById('aiSuggestionText');
+            const suggestionPills = document.getElementById('aiSuggestionPills');
+
+            if (totalPlanScaled) {
+                if (suggestionHeading && suggestionText && suggestionBanner) {
+                    const reqHours = (baseRequestedDayMinutes / 60).toFixed(1);
+                    suggestionHeading.innerText = '🎯 Parametrik Limit & Akıllı Süre Optimizasyonu';
+                    suggestionText.innerHTML = `Girdiğiniz günlük toplam çalışma süresi (<strong>${reqHours} Saat</strong>), belirlediğiniz günlük maksimum sınır olan <strong>${globalDailyLimit} Saate</strong> göre ders önem ve ağırlık oranları korunarak dengelenmiştir.`;
+                    
+                    if (suggestionPills) {
+                        suggestionPills.innerHTML = detectedSubjects.map((s, idx) => {
+                            const origM = originalRequestedSubjects[idx].minutes;
+                            const origH = (origM / 60).toFixed(1);
+                            const optH = (s.minutes / 60).toFixed(1);
+                            return `
+                                <div class="px-3 py-1.5 rounded-xl text-xs font-semibold border flex items-center gap-2 shadow-sm" style="background: var(--bg-card); color: var(--text-main); border-color: var(--border-color)">
+                                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                    <span class="font-bold">${s.name}:</span>
+                                    <span style="color: var(--text-muted); text-decoration: line-through;">${origH} sa</span>
+                                    <span class="text-amber-500 font-bold">➔ ${optH} sa (${s.minutes} dk)</span>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                    suggestionBanner.classList.remove('hidden');
+                }
+                showToast(`Günlük süreler ${globalDailyLimit} saat sınırına göre dengelendi.`, 'warning', '⚡ Süreler Optimize Edildi');
+            } else {
+                if (suggestionBanner) suggestionBanner.classList.add('hidden');
+                showToast(`Planınız ${totalDays} günlük (${detectedSubjects.length} ders) olarak oluşturuldu!`, 'success', '✨ Plan Hazır');
+            }
+
+            renderDaysTabBar();
+            renderActiveDay();
+            renderFullTable();
+            updateOverallProgress();
+        }
+
+        // Local LLM Call Function
+        async function generatePlanFromLocalLLM(promptText) {
+            const systemPrompt = `Sen bir YKS ve ders çalışma takvimi uzmanısın. Kullanıcının isteklerine göre JSON formatında çalışma takvimi üret.
+Çıktı SADECE geçerli bir JSON array olmalıdır. Format:
+[
+  {
+    "day": 1,
+    "title": "1. Gün Çalışma Planı",
+    "totalMinutes": 360,
+    "timeRange": "10:00 - 17:30",
+    "sessions": [
+      {
+        "id": "d1_s1",
+        "topic": "Fonksiyon Temel",
+        "videoUrl": "https://youtu.be/DW5ppxQf00A",
+        "stage": "Yeni Konu",
+        "stageBadge": "stage-new",
+        "durationMinutes": 180,
+        "timeSlot": "10:00 - 13:00 (AYT Mat)"
+      }
+    ]
+  }
+]`;
+
+            let payload;
+            if (llmConfig.provider === 'ollama') {
+                payload = {
+                    model: llmConfig.model,
+                    prompt: systemPrompt + '\n\nKullanıcı İsteği: ' + promptText + '\n\nJSON Çıktısı:',
+                    stream: false,
+                    format: 'json'
+                };
+            } else {
+                payload = {
+                    model: llmConfig.model,
+                    messages: [
+                        { role: 'system', content: systemPrompt },
+                        { role: 'user', content: promptText }
+                    ],
+                    temperature: 0.2
+                };
+            }
+
+            const res = await fetch(llmConfig.endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (!res.ok) throw new Error('LLM HTTP ' + res.status);
+            const data = await res.json();
+            let jsonText = (data.response || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '').trim();
+
+            const startIdx = jsonText.indexOf('[');
+            const endIdx = jsonText.lastIndexOf(']');
+            if (startIdx !== -1 && endIdx !== -1) {
+                jsonText = jsonText.substring(startIdx, endIdx + 1);
+                const parsed = JSON.parse(jsonText);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    activePlan = parsed;
+                    currentActiveDay = 1;
+                    document.getElementById('planTitle').innerText = '🤖 Yerel Yapay Zeka (' + llmConfig.model + ') Tarafından Üretilen Plan';
+                    document.getElementById('planSubtitle').innerText = 'Toplam ' + parsed.length + ' Gün • Yapay zeka ile kişiselleştirildi';
+                    renderDaysTabBar();
+                    renderActiveDay();
+                    renderFullTable();
+                    updateOverallProgress();
+                    showToast('Yerel Yapay Zeka planınızı başarıyla oluşturdu!', 'success', '🧠 AI Planı Hazır');
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        let pomodoroInterval = null;
+        let pomodoroSecondsLeft = 3600;
+
+        function openPomodoro(topicName, stage, durationMinutes) {
+            document.getElementById('pomodoroTopicLabel').innerText = topicName;
+            document.getElementById('pomodoroStageLabel').innerText = stage + ' • Hedef: ' + durationMinutes + ' dk';
+            pomodoroSecondsLeft = (durationMinutes || 60) * 60;
+            updatePomodoroDisplay();
+            document.getElementById('pomodoroModal').classList.remove('hidden');
+        }
+
+        function closePomodoro() {
+            pausePomodoro();
+            document.getElementById('pomodoroModal').classList.add('hidden');
+        }
+
+        function updatePomodoroDisplay() {
+            const mins = Math.floor(pomodoroSecondsLeft / 60);
+            const secs = pomodoroSecondsLeft % 60;
+            document.getElementById('pomodoroDisplay').innerText = 
+                String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+        }
+
+        function startPomodoro() {
+            if (pomodoroInterval) return;
+            pomodoroInterval = setInterval(() => {
+                if (pomodoroSecondsLeft > 0) {
+                    pomodoroSecondsLeft--;
+                    updatePomodoroDisplay();
+                } else {
+                    pausePomodoro();
+                    showToast('Tebrikler! Odaklanma süreniz tamamlandı.', 'success', '🎉 Süre Tamamlandı');
+                }
+            }, 1000);
+            document.getElementById('pomodoroStartBtn').innerText = 'Çalışıyor...';
+        }
+
+        function pausePomodoro() {
+            clearInterval(pomodoroInterval);
+            pomodoroInterval = null;
+            document.getElementById('pomodoroStartBtn').innerText = 'Başlat';
+        }
+
+        function resetPomodoro() {
+            pausePomodoro();
+            pomodoroSecondsLeft = 3600;
+            updatePomodoroDisplay();
+        }
+
+        function exportToICS() {
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//YKS Study Planner//TR\nCALSCALE:GREGORIAN\n";
+            const today = new Date();
+
+            activePlan.forEach((d, dayIdx) => {
+                const eventDate = new Date(today);
+                eventDate.setDate(today.getDate() + dayIdx);
+                const dateStr = eventDate.toISOString().slice(0, 10).replace(/-/g, '');
+
+                d.sessions.forEach((s) => {
+                    icsContent += "BEGIN:VEVENT\n";
+                    icsContent += "SUMMARY:" + s.topic + " (" + s.stage + ")\n";
+                    icsContent += "DESCRIPTION:" + s.stage + " | Video: " + s.videoUrl + "\n";
+                    icsContent += "DTSTART;VALUE=DATE:" + dateStr + "\n";
+                    icsContent += "DTEND;VALUE=DATE:" + dateStr + "\n";
+                    icsContent += "END:VEVENT\n";
+                });
+            });
+
+            icsContent += "END:VCALENDAR";
+
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'YKS_Calisma_Plani.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        window.onload = function() {
+            initApp();
+        };
+    </script>
+</body>
+</html>
