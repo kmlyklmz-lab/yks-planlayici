@@ -2809,7 +2809,15 @@
                 durationMinutes = (unit.startsWith('s')) ? Math.round(val * 60) : Math.round(val);
             }
             
-            const actionType = isRemove ? 'remove' : (isUpdate ? 'update' : 'add');
+            // Action Type Determination (Add takes precedence if user says "ekle ... olsun")
+            let actionType = 'add';
+            if (isRemove) {
+                actionType = 'remove';
+            } else if (isAdd) {
+                actionType = 'add';
+            } else if (isUpdate) {
+                actionType = 'update';
+            }
             
             return {
                 action: actionType,
@@ -2886,15 +2894,30 @@
                 if (!dayData) return;
                 
                 if (act.action === 'add') {
-                    const topicObj = (act.subject.topics && act.subject.topics.length > 0) 
-                        ? act.subject.topics[Math.floor(Math.random() * act.subject.topics.length)] 
-                        : { name: act.subject.name + ' Temel Konu', video_url: '' };
+                    let topicName = act.subject.name + ' Çalışması';
+                    let videoUrl = '';
+                    
+                    if (act.subject.topics && act.subject.topics.length > 0) {
+                        const rawLower = (act.rawPrompt || '').toLowerCase();
+                        const foundTopic = act.subject.topics.find(t => rawLower.includes(t.name.toLowerCase()));
+                        if (foundTopic) {
+                            topicName = foundTopic.name;
+                            videoUrl = foundTopic.video_url || '';
+                        } else {
+                            // Pick first available or random from curriculum
+                            const usedTopicNames = new Set();
+                            activePlan.forEach(d => d.sessions.forEach(s => usedTopicNames.add(s.topic.toLowerCase())));
+                            const available = act.subject.topics.find(t => !usedTopicNames.has(t.name.toLowerCase())) || act.subject.topics[0];
+                            topicName = available.name;
+                            videoUrl = available.video_url || '';
+                        }
+                    }
                     
                     dayData.sessions.push({
                         id: `d${dayNum}_s${Date.now()}_${Math.floor(Math.random()*1000)}`,
-                        topic: topicObj.name,
-                        videoUrl: getTopicVideoUrl(topicObj.name, topicObj.video_url || ''),
-                        stage: 'Özel Çalışma',
+                        topic: topicName,
+                        videoUrl: getTopicVideoUrl(topicName, videoUrl),
+                        stage: 'Yeni Konu',
                         stageBadge: 'stage-new',
                         durationMinutes: act.durationMinutes,
                         timeSlot: ''
@@ -2913,8 +2936,19 @@
                             totalAffected++;
                         }
                     });
-                    if (!found && dayData.sessions.length > 0) {
-                        dayData.sessions[0].durationMinutes = act.durationMinutes;
+                    if (!found) {
+                        // If subject wasn't on that day, add it
+                        let topicName = (act.subject.topics && act.subject.topics[0]) ? act.subject.topics[0].name : (act.subject.name + ' Çalışması');
+                        let videoUrl = (act.subject.topics && act.subject.topics[0]) ? (act.subject.topics[0].video_url || '') : '';
+                        dayData.sessions.push({
+                            id: `d${dayNum}_s${Date.now()}_${Math.floor(Math.random()*1000)}`,
+                            topic: topicName,
+                            videoUrl: getTopicVideoUrl(topicName, videoUrl),
+                            stage: 'Yeni Konu',
+                            stageBadge: 'stage-new',
+                            durationMinutes: act.durationMinutes,
+                            timeSlot: ''
+                        });
                         totalAffected++;
                     }
                 }
