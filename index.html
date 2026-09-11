@@ -6,6 +6,7 @@
     <title>YKS / AYT / TYT Akıllı Çalışma Planlayıcı</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="cloud-db.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -183,9 +184,10 @@
                     </button>
                 </div>
 
-                <button onclick="openDatabaseModal()" id="dbStatusHeaderBtn" title="Veritabanı & İşlem Kütüğü (IndexedDB)" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all shadow-sm">
+                <button onclick="openDatabaseModal('cloud')" id="cloudSyncHeaderBadge" title="Canlı Bulut Kayıt & Eşitleme Durumu (Google Firebase)" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center gap-1.5 transition-all shadow-sm">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>💾 Veritabanı</span>
+                    <span class="hidden sm:inline">🟢 Canlı Kayıt & Eşitleme</span>
+                    <span class="sm:hidden">🟢 Canlı</span>
                 </button>
                 <button onclick="exportToICS()" class="px-3 py-1.5 text-xs font-medium rounded-lg border theme-card flex items-center gap-1.5 transition-all">
                     📅 <span class="hidden sm:inline">Takvime Aktar</span> (.ics)
@@ -738,30 +740,86 @@
             <div class="theme-panel p-6 rounded-2xl max-w-3xl w-full border border-emerald-500/40 space-y-4 shadow-2xl max-h-[90vh] flex flex-col">
                 <div class="flex justify-between items-center border-b pb-3 shrink-0" style="border-color: var(--border-color)">
                     <div class="flex items-center gap-2.5">
-                        <span class="text-xl">💾</span>
+                        <span class="text-xl">☁️</span>
                         <div>
-                            <h4 class="text-base font-bold text-emerald-400">Veritabanı & İşlem Geçmişi (IndexedDB)</h4>
-                            <p class="text-[11px]" style="color: var(--text-muted)">Tüm çalışma planınız, müfredatınız ve CRUD işlemleriniz tarayıcı veritabanında saklanır.</p>
+                            <h4 class="text-base font-bold text-emerald-400">Veritabanı & Canlı Bulut (Google Firebase & IndexedDB)</h4>
+                            <p class="text-[11px]" style="color: var(--text-muted)">Tüm çalışma planınız, müfredatınız ve oturumlarınız Google Firebase NoSQL bulutunda anlık senkronize edilir.</p>
                         </div>
                     </div>
                     <button onclick="closeDatabaseModal()" class="text-xl opacity-60 hover:opacity-100" style="color: var(--text-muted)">&times;</button>
                 </div>
 
                 <!-- Tabs -->
-                <div class="flex items-center gap-2 border-b pb-2 shrink-0" style="border-color: var(--border-color)">
-                    <button onclick="setDbModalTab('logs')" id="dbTabLogsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md">
+                <div class="flex items-center gap-2 border-b pb-2 shrink-0 flex-wrap" style="border-color: var(--border-color)">
+                    <button onclick="setDbModalTab('cloud')" id="dbTabCloudBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md cursor-pointer">
+                        ☁️ Firebase Canlı Bulut
+                    </button>
+                    <button onclick="setDbModalTab('logs')" id="dbTabLogsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100 cursor-pointer">
                         📜 İşlem Kütüğü (CRUD Logları)
                     </button>
-                    <button onclick="setDbModalTab('backup')" id="dbTabBackupBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100">
+                    <button onclick="setDbModalTab('backup')" id="dbTabBackupBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100 cursor-pointer">
                         💾 Yedekleme & Geri Yükleme
                     </button>
-                    <button onclick="setDbModalTab('stats')" id="dbTabStatsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100">
+                    <button onclick="setDbModalTab('stats')" id="dbTabStatsBtn" class="px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100 cursor-pointer">
                         📊 Tablo Durumu & İstatistikler
                     </button>
                 </div>
 
+                <!-- Tab 0: Firebase Cloud Tab -->
+                <div id="dbTabCloudContent" class="space-y-4 flex-1 overflow-y-auto custom-scrollbar">
+                    <div class="p-4 rounded-xl border space-y-3" style="background: var(--bg-card); border-color: rgba(16, 185, 129, 0.4)">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <h5 class="text-xs font-bold text-emerald-400 flex items-center gap-2">
+                                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                <span>Google Firebase Realtime Cloud NoSQL</span>
+                            </h5>
+                            <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold" id="cloudModalStatusText">
+                                🟢 Canlı Senkronizasyon Aktif
+                            </span>
+                        </div>
+                        <p class="text-xs leading-relaxed" style="color: var(--text-muted)">
+                            Tüm 14 günlük takviminiz, tamamlanan ders oturumları, konu video linkleri, günlük limitiniz ve kütük kayıtlarınız anlık olarak Google Firebase bulut sunucusunda güvenle yedeklenir. Telefon, tablet ve bilgisayarlar arasında anında senkronize olur.
+                        </p>
+                        
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                            <div class="p-2.5 rounded-lg border theme-panel space-y-0.5">
+                                <span class="text-[10px] uppercase font-bold" style="color: var(--text-muted)">Anlık Veri Akışı (SSE)</span>
+                                <div id="cloudModalSseText" class="font-bold text-emerald-400">🟢 Aktif (Server-Sent Events)</div>
+                            </div>
+                            <div class="p-2.5 rounded-lg border theme-panel space-y-0.5">
+                                <span class="text-[10px] uppercase font-bold" style="color: var(--text-muted)">Son Eşitleme Zamanı</span>
+                                <div id="cloudModalLastSyncTime" class="font-bold" style="color: var(--text-main)">Henüz yapılmadı</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-1 flex-wrap">
+                            <button onclick="manualPushToCloud()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg shadow-emerald-600/20 flex items-center gap-1.5 transition-all cursor-pointer">
+                                <span>🚀</span>
+                                <span>Buluta Şimdi Eşitle (Push)</span>
+                            </button>
+                            <button onclick="manualPullFromCloud()" class="px-3.5 py-2 rounded-xl border theme-card hover:border-emerald-500 text-emerald-400 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer">
+                                <span>🔄</span>
+                                <span>Buluttan Güncel Veriyi Çek (Pull)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="p-3.5 rounded-xl border theme-card space-y-2 text-xs">
+                        <h6 class="font-bold text-indigo-400 flex items-center gap-1.5">
+                            <span>📡</span>
+                            <span>Bulut Veritabanı Uç Noktası</span>
+                        </h6>
+                        <div class="p-2 rounded-lg bg-black/40 font-mono text-[11px] text-slate-300 break-all border border-slate-700/50">
+                            https://okul-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json
+                        </div>
+                        <div class="text-[11px] leading-relaxed" style="color: var(--text-muted)">
+                            ✅ <strong>Çevrimdışı Koruma (Offline-First):</strong> İnternet bağlantınız kopsa dahi verileriniz tarayıcınızın IndexedDB & LocalStorage hafızasında güvenle saklanır; internet geldiğinde otomatik olarak buluta eşitlenir.
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Tab 1: Activity Logs -->
-                <div id="dbTabLogsContent" class="space-y-3 flex-1 overflow-y-auto custom-scrollbar">
+                <div id="dbTabLogsContent" class="space-y-3 hidden flex-1 overflow-y-auto custom-scrollbar">
                     <div class="flex justify-between items-center flex-wrap gap-2 text-xs">
                         <span class="font-medium" style="color: var(--text-muted)">Son yapılan ekleme, silme, güncelleme ve plan işlemleri:</span>
                         <div class="flex items-center gap-2">
@@ -1034,6 +1092,9 @@
             async saveActivePlan(plan) {
                 if (!plan || !Array.isArray(plan)) return;
                 try { localStorage.setItem('yks_active_plan_v2', JSON.stringify(plan)); } catch (e) {}
+                if (typeof CloudDB !== 'undefined' && CloudDB.schedulePush) {
+                    CloudDB.schedulePush();
+                }
                 if (!this.db) return;
                 return new Promise((resolve) => {
                     try {
@@ -1075,6 +1136,9 @@
             async saveCurriculum(curr) {
                 if (!curr) return;
                 try { localStorage.setItem('yks_custom_curriculum', JSON.stringify(curr)); } catch (e) {}
+                if (typeof CloudDB !== 'undefined' && CloudDB.schedulePush) {
+                    CloudDB.schedulePush();
+                }
                 if (!this.db) return;
                 return new Promise((resolve) => {
                     try {
@@ -1121,6 +1185,9 @@
 
             async saveSetting(key, val) {
                 try { localStorage.setItem('yks_setting_' + key, JSON.stringify(val)); } catch (e) {}
+                if (typeof CloudDB !== 'undefined' && CloudDB.schedulePush) {
+                    CloudDB.schedulePush();
+                }
                 if (!this.db) return;
                 return new Promise((resolve) => {
                     try {
@@ -1174,6 +1241,9 @@
                         const store = tx.objectStore('activity_logs');
                         store.add(logEntry);
                     } catch (e) {}
+                }
+                if (typeof CloudDB !== 'undefined' && CloudDB.schedulePush) {
+                    CloudDB.schedulePush();
                 }
                 updateDbStatsBadge();
             },
@@ -1364,11 +1434,14 @@
             if (banner) banner.classList.add('hidden');
         }
 
-        // Database Modal UI Handlers
-        function openDatabaseModal() {
-            setDbModalTab('logs');
+        // Database & Cloud Modal UI Handlers
+        function openDatabaseModal(initialTab = 'cloud') {
+            setDbModalTab(initialTab);
             refreshDbLogsUI();
             updateDbStatsBadge();
+            if (typeof CloudDB !== 'undefined' && CloudDB.updateModalCloudStatus) {
+                CloudDB.updateModalCloudStatus();
+            }
             document.getElementById('databaseModal').classList.remove('hidden');
         }
 
@@ -1377,24 +1450,32 @@
         }
 
         function setDbModalTab(tabName) {
+            const tabCloudBtn = document.getElementById('dbTabCloudBtn');
             const tabLogsBtn = document.getElementById('dbTabLogsBtn');
             const tabBackupBtn = document.getElementById('dbTabBackupBtn');
             const tabStatsBtn = document.getElementById('dbTabStatsBtn');
 
+            const contentCloud = document.getElementById('dbTabCloudContent');
             const contentLogs = document.getElementById('dbTabLogsContent');
             const contentBackup = document.getElementById('dbTabBackupContent');
             const contentStats = document.getElementById('dbTabStatsContent');
 
             // Reset buttons
-            [tabLogsBtn, tabBackupBtn, tabStatsBtn].forEach(b => {
+            [tabCloudBtn, tabLogsBtn, tabBackupBtn, tabStatsBtn].forEach(b => {
                 if (b) b.className = 'px-3.5 py-1.5 rounded-xl text-xs font-semibold theme-card opacity-70 hover:opacity-100 cursor-pointer';
             });
             // Hide contents
-            [contentLogs, contentBackup, contentStats].forEach(c => {
+            [contentCloud, contentLogs, contentBackup, contentStats].forEach(c => {
                 if (c) c.classList.add('hidden');
             });
 
-            if (tabName === 'logs') {
+            if (tabName === 'cloud') {
+                if (tabCloudBtn) tabCloudBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md cursor-pointer';
+                if (contentCloud) contentCloud.classList.remove('hidden');
+                if (typeof CloudDB !== 'undefined' && CloudDB.updateModalCloudStatus) {
+                    CloudDB.updateModalCloudStatus();
+                }
+            } else if (tabName === 'logs') {
                 if (tabLogsBtn) tabLogsBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md cursor-pointer';
                 if (contentLogs) contentLogs.classList.remove('hidden');
                 renderDbLogsUI();
@@ -1405,6 +1486,28 @@
                 if (tabStatsBtn) tabStatsBtn.className = 'px-3.5 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white shadow-md cursor-pointer';
                 if (contentStats) contentStats.classList.remove('hidden');
                 updateDbStatsBadge();
+            }
+        }
+
+        async function manualPushToCloud() {
+            if (typeof CloudDB !== 'undefined') {
+                const ok = await CloudDB.pushToCloud();
+                if (ok) {
+                    showToast('Tüm verileriniz Firebase bulutuna anında eşitlendi.', 'success', '☁️ Buluta Kaydedildi');
+                } else {
+                    showToast('Buluta eşitleme yapılamadı. Çevrimdışı olabilirsiniz.', 'error', 'Eşitleme Hatası');
+                }
+            }
+        }
+
+        async function manualPullFromCloud() {
+            if (typeof CloudDB !== 'undefined') {
+                const data = await CloudDB.pullFromCloud(false);
+                if (data) {
+                    showToast('Güncel veriler Firebase buluttan başarıyla çekildi.', 'success', '☁️ Buluttan Çekildi');
+                } else {
+                    showToast('Buluttan veri çekilemedi veya veritabanı boş.', 'info', 'Bulut Verisi');
+                }
             }
         }
 
@@ -1821,6 +1924,9 @@
         // Initialize Application
         async function initApp() {
             await AppDB.initData(MASTER_14_DAYS_DATA, CURRICULUM);
+            if (typeof CloudDB !== 'undefined') {
+                CloudDB.init();
+            }
             setTheme(currentTheme);
             applyCustomLinksToPlan(activePlan);
             
