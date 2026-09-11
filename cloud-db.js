@@ -1,8 +1,8 @@
-﻿/* cloud-db.js — Official Google Firebase Realtime NoSQL Engine for YKS Akıllı Ders Planlayıcı */
+/* cloud-db.js — Official Google Firebase Realtime NoSQL Engine for YKS Akıllı Ders Planlayıcı */
 
 const CloudDB = {
-    defaultUrl: 'https://okul-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json',
-    databaseUrl: 'https://okul-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json',
+    defaultUrl: 'https://yks-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json',
+    databaseUrl: 'https://yks-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json',
     syncStatus: 'synced', // 'syncing' | 'synced' | 'offline' | 'error'
     lastSyncTime: null,
     eventSource: null,
