@@ -1,6 +1,7 @@
 ﻿/* cloud-db.js — Official Google Firebase Realtime NoSQL Engine for YKS Akıllı Ders Planlayıcı */
 
 const CloudDB = {
+    defaultUrl: 'https://okul-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json',
     databaseUrl: 'https://okul-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json',
     syncStatus: 'synced', // 'syncing' | 'synced' | 'offline' | 'error'
     lastSyncTime: null,
@@ -10,6 +11,14 @@ const CloudDB = {
     isApplyingRemote: false,
 
     init() {
+        // Load custom Firebase URL if configured by user
+        try {
+            const savedUrl = localStorage.getItem('yks_firebase_url');
+            if (savedUrl && savedUrl.trim().startsWith('http')) {
+                this.databaseUrl = savedUrl.trim();
+            }
+        } catch (e) {}
+
         this.updateHeaderBadge();
 
         // 1. Initial pull from Firebase Realtime DB
@@ -53,6 +62,25 @@ const CloudDB = {
                 this.pullFromCloud(true);
             }
         }, 20000);
+    },
+
+    // Configure a new / separate Firebase Realtime Database URL
+    setDatabaseUrl(newUrl) {
+        if (!newUrl || !newUrl.trim()) {
+            this.databaseUrl = this.defaultUrl;
+            try { localStorage.removeItem('yks_firebase_url'); } catch(e){}
+        } else {
+            let clean = newUrl.trim();
+            if (!clean.endsWith('.json')) {
+                clean = clean.replace(/\/+$/, '') + '/yks_planner.json';
+            }
+            this.databaseUrl = clean;
+            try { localStorage.setItem('yks_firebase_url', clean); } catch(e){}
+        }
+        this.connectLiveStream();
+        this.pullFromCloud(false);
+        this.updateModalCloudStatus();
+        this.updateHeaderBadge();
     },
 
     // Connect to Firebase Realtime Database Streaming API
@@ -348,6 +376,7 @@ const CloudDB = {
         const statusEl = document.getElementById('cloudModalStatusText');
         const timeEl = document.getElementById('cloudModalLastSyncTime');
         const sseEl = document.getElementById('cloudModalSseText');
+        const urlInput = document.getElementById('firebaseDbUrlInput');
 
         if (statusEl) {
             if (!navigator.onLine) {
@@ -365,6 +394,10 @@ const CloudDB = {
 
         if (sseEl) {
             sseEl.innerHTML = this.eventSource ? '<span class="text-emerald-400 font-bold">🟢 Aktif (Server-Sent Events)</span>' : '<span class="text-indigo-400 font-bold">🔄 Polling / Yedek Eşitleme</span>';
+        }
+
+        if (urlInput) {
+            urlInput.value = this.databaseUrl;
         }
     }
 };

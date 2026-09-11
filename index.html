@@ -804,16 +804,22 @@
                         </div>
                     </div>
 
-                    <div class="p-3.5 rounded-xl border theme-card space-y-2 text-xs">
-                        <h6 class="font-bold text-indigo-400 flex items-center gap-1.5">
-                            <span>📡</span>
-                            <span>Bulut Veritabanı Uç Noktası</span>
-                        </h6>
-                        <div class="p-2 rounded-lg bg-black/40 font-mono text-[11px] text-slate-300 break-all border border-slate-700/50">
-                            https://okul-planlayici-default-rtdb.europe-west1.firebasedatabase.app/yks_planner.json
+                    <div class="p-3.5 rounded-xl border theme-card space-y-2.5 text-xs">
+                        <div class="flex items-center justify-between flex-wrap gap-2">
+                            <h6 class="font-bold text-indigo-400 flex items-center gap-1.5">
+                                <span>📡</span>
+                                <span>Firebase Realtime Database Uç Noktası</span>
+                            </h6>
+                            <button onclick="resetFirebaseDbUrl()" class="text-[11px] text-slate-400 hover:text-white underline cursor-pointer">Varsayılana Sıfırla</button>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="firebaseDbUrlInput" placeholder="https://proje-id-default-rtdb.europe-west1.firebasedatabase.app/" class="flex-1 px-3 py-2 rounded-xl border font-mono text-[11px] focus:outline-none focus:border-indigo-500" style="background: rgba(0,0,0,0.3); border-color: var(--border-color); color: var(--text-main)">
+                            <button onclick="saveCustomFirebaseUrl()" class="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shrink-0 cursor-pointer shadow-md">
+                                Kaydet & Bağlan
+                            </button>
                         </div>
                         <div class="text-[11px] leading-relaxed" style="color: var(--text-muted)">
-                            ✅ <strong>Çevrimdışı Koruma (Offline-First):</strong> İnternet bağlantınız kopsa dahi verileriniz tarayıcınızın IndexedDB & LocalStorage hafızasında güvenle saklanır; internet geldiğinde otomatik olarak buluta eşitlenir.
+                            💡 <strong>Ayrı Firebase Projesi Bağlama:</strong> Firebase Console'da yeni oluşturduğunuz projenin <em>Realtime Database</em> URL'sini buraya yapıştırıp kaydedebilirsiniz.
                         </div>
                     </div>
                 </div>
@@ -1508,6 +1514,23 @@
                 } else {
                     showToast('Buluttan veri çekilemedi veya veritabanı boş.', 'info', 'Bulut Verisi');
                 }
+            }
+        }
+
+        function saveCustomFirebaseUrl() {
+            const input = document.getElementById('firebaseDbUrlInput');
+            if (!input) return;
+            const val = input.value.trim();
+            if (typeof CloudDB !== 'undefined') {
+                CloudDB.setDatabaseUrl(val);
+                showToast('Firebase veritabanı adresi güncellendi ve yeni buluta bağlandı.', 'success', '🔗 Bulut Bağlandı');
+            }
+        }
+
+        function resetFirebaseDbUrl() {
+            if (typeof CloudDB !== 'undefined') {
+                CloudDB.setDatabaseUrl('');
+                showToast('Firebase veritabanı varsayılan adrese sıfırlandı.', 'info', '🔄 Sıfırlandı');
             }
         }
 
